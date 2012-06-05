@@ -1,6 +1,6 @@
 #ADD-PSSNAPIN SqlServerProviderSnapin100
 #ADD-PSSNAPIN SqlServerCmdletSnapin100
-$a = Invoke-Sqlcmd -Query "exec metrics.SelectHostSID_Name_WMIError" -ServerInstance "vhacdwm01" -Database "Dbametrics"
+$a = Invoke-Sqlcmd -Query "exec metrics.SelectHostSID_Name_WMIError" -ServerInstance "monitoringServer" -Database "Dbametrics"
 $a | ForEach-Object {
     $hostName = $_.hostname
     $hostSID = $_.hostSID
@@ -13,7 +13,7 @@ $a | ForEach-Object {
 	    if ($diskAvailableSize.Endswith("MB")) { $diskAvailableSize =1 }
 	    else {$diskAvailableSize = $diskAvailableSize.replace('GB', '')}
             $sql = "EXEC Metrics.InsertWindowsHostDiskInfo $hostSID, '$driveLetter', '$diskFormat', '$diskLabel', $diskTotalSize, $diskAvailableSize"
-            Invoke-Sqlcmd -Query $sql -ServerInstance "vhacdwm01" -Database "DBAMetrics" } } }
+            Invoke-Sqlcmd -Query $sql -ServerInstance "monitoringServer" -Database "DBAMetrics" } } }
     else {
 #Note: DriveType 5 is CD/DVD, DriveType 2 is removable disk therefore we don't care. We only care about LocalDisk, which is DriveType 3
 get-wmiobject -computername $hostName Win32_volume | where { $_.DriveType -eq 3} | foreach {
@@ -21,6 +21,6 @@ get-wmiobject -computername $hostName Win32_volume | where { $_.DriveType -eq 3}
 	    $diskAvailableSize =  $_.FreeSpace / 1gb
             $driveLetter, $diskFormat, $diskLabel = $_.Name.substring(0,1), $_.FileSystem, $_.Label
             $sql = "EXEC Metrics.InsertWindowsHostDiskInfo $hostSID, '$driveLetter', '$diskFormat', '$diskLabel', $diskTotalSize, $diskAvailableSize"
-	    Invoke-Sqlcmd -Query $sql -ServerInstance "vhacdwm01" -Database "DBAMetrics"
+	    Invoke-Sqlcmd -Query $sql -ServerInstance "monitoringServer" -Database "DBAMetrics"
 	} } }
 
