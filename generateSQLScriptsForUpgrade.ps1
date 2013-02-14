@@ -10,9 +10,10 @@ exit
 
 $serverName = $results.column1.replace('\', '_')
 $serverDate = Get-Date -format "yyyy_MM_dd"
+$savedScriptPath = "C:\users\Administrator\Documents\work\"
 
 #Step 1 Save SQL Server metadata: credentials, logins, linked servers, resource pools, server triggers, proxy accounts, job categories, and jobs
-$fileName = "X:\pathToSaveScripts\" + $serverName + "_configuration" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_configuration" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for SQL instance level objects"
 
 # Generate script for Credentials since sqlps does not have a method for it!
@@ -64,7 +65,7 @@ get-childitem | %{$_.Script()} | Add-Content $fileName
 $results = getInstanceUserDb -ServerInstance $ServerInstance
 
 #Step 2 Generate DBCC CHECKDB command to make sure it is in a stable state before detaching
-$fileName = "X:\pathToSaveScripts\" + $serverName + "_Step1_DBCC" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_Step1_DBCC" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for checking all user databases integrity with DBCC on $ServerInstance"
 $results | ForEach-Object {
 	Add-Content $fileName ("--" + $_.name)
@@ -76,7 +77,7 @@ $results | ForEach-Object {
 "Successfully generated DBCC CHECKDB script for instance $ServerInstance. It was saved in file $fileName"
 
 #Step 3 Generate detach script
-$fileName = "X:\pathToSaveScripts\" + $serverName + "_Step2_detach" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_Step2_detach" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for detaching all user databases on $ServerInstance"
 $results | ForEach-Object {
 	Add-Content $fileName ("--" + $_.name)
@@ -87,7 +88,7 @@ $results | ForEach-Object {
 "Successfully generated detach script for instance $ServerInstance. It was saved in file $fileName"
 
 #Step 4 Generate attach script, to be used after upgrade. It also changes db ownership to SA and set compatibility level to 110
-$fileName = "X:\pathToSaveScripts\" + $serverName + "_Step3_attach" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_Step3_attach" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for attaching all user databases on $ServerInstance"
 $results | ForEach-Object {
 	Add-Content $fileName ("--" + $_.name)
@@ -120,7 +121,7 @@ $dbPropertyResults | ForEach-Object {
 "Successfully generated attach script for instance $ServerInstance. It was saved in file $fileName"
 
 #Step 5 Generate update stats scripts for use after upgrade is complete.
-$fileName = "X:\pathToSaveScripts\" + $serverName + "_Step4_UpdateStats" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_Step4_UpdateStats" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for updating database stats after upgrade is complete"
 $results | ForEach-Object {
 	Add-Content $fileName ("USE " + $_.name)
