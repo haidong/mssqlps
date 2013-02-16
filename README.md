@@ -3,6 +3,16 @@ mssqlps
 
 PowerShell and related scripts for SQL Server administration
 
+The scripts here make extensive use of sqlps by importing that module. To install the sqlps module (independent of the sqlps utility inside of Management Studio), please go to:
+
+https://www.microsoft.com/en-us/download/details.aspx?id=29065
+
+and install the following:
+
+1. Microsoft System CLR Types for Microsoft SQL Server 2012
+2. Microsoft SQL Server 2012 Shared Management Objects
+3. Microsoft Windows PowerShell Extensions for Microsoft SQL Server 2012
+
 ## baseFunctions.ps1
 Base functions that we source into and exposes commonly used functions. For instance, it has functions for:
 
