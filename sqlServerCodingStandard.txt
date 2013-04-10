@@ -1,0 +1,10 @@
+Adapted from Red Gate Guide to SQL Server Team-based development book
+
+1. Keep your database case-insensitive, even if your data has to be case-sensitive, unless you are developing in a language for which this is inappropriate.
+2. Capitalize all the Scalars and Schema object names (e.g. Invoice, Basket, Customer, CustomerBase, Ledger).
+3. Object names should be singular. There can be rare expceptions, when the plural form of is commonly used and accepted. If possible, use a collective name for tables or views, such as "flock", "team", etc.
+4. Uppercase all reserved words (such as SELECT, WITH, PIVOT, FROM, WHERE), including functions and data types.
+5. Put block delimiters (such as BEGIN and END) on a new line by themselves, correctly indented.
+6. Always use the semicolon to aid the reading of code, even where SQL syntax states that it is only optional.
+7. Use an increased indent for subordinate clauses if the ON, INTO, and HAVING statement is at the start of the line.
+8. One can keep a list item on the same line as SELECT, the rest of the list items should each occupy a line, with a comma and space in front of it for easy commenting out.
