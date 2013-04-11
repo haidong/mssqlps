@@ -1,14 +1,5 @@
-declare @rc int, @dir nvarchar(4000)
-exec @rc = master.dbo.xp_instance_regread N'HKEY_LOCAL_MACHINE',N'Software\Microsoft\MSSQLServer\MSSQLServer',N'DefaultData', @dir output, 'no_output'
-
-if (@dir is null)
-	begin
-		exec @rc = master.dbo.xp_instance_regread N'HKEY_LOCAL_MACHINE',N'Software\Microsoft\MSSQLServer\Setup',N'SQLDataRoot', @dir output, 'no_output'
-		select @dir = @dir + N'\Data'
-	end
-
-SELECT @dir
-
+CREATE DATABASE DBAMetrics
+GO
 SET ANSI_PADDING OFF
 GO
 USE [DBAMetrics]
@@ -109,6 +100,145 @@ BEGIN
 END
 GO
 INSERT INTO Windows.Host (HostName) VALUES ('dev1')
+
+
+CREATE TABLE [Windows].[Instance](
+	[InstanceID] [int] IDENTITY(1,1) NOT NULL,
+	[HostID] [int] NOT NULL,
+	[InstanceName] [nvarchar](30) NULL,
+	[InstanceEdition] [nvarchar](50) NULL,
+	[InstanceVersion] [nchar](20) NULL,
+	[InstanceServicePack] [nvarchar](20) NULL,
+	[IsActive] [nchar](1) NOT NULL,
+	[LastUpdate] [datetime2] NULL
+ CONSTRAINT [PK_Host] PRIMARY KEY CLUSTERED 
+(
+	[InstanceID] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [DefFG],
+ CONSTRAINT [UNQ_InstanceName] UNIQUE NONCLUSTERED 
+(
+	[InstanceName] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [DefFG]
+) ON [DefFG]
+
+GO
+
+ALTER TABLE [Windows].[Instance]  WITH CHECK ADD  CONSTRAINT [CK_Instance_IsActive] CHECK  (([IsActive]='N' OR [IsActive]='n' OR [IsActive]='Y' OR [IsActive]='y'))
+GO
+
+ALTER TABLE [Windows].[Instance] CHECK CONSTRAINT [CK_Instance_IsActive]
+GO
+
+ALTER TABLE [Windows].[Instance] ADD  CONSTRAINT [DF_Instance_IsActive]  DEFAULT ('Y') FOR [IsActive]
+GO
+
+ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [DF_Instance_LastUpdate] DEFAULT (getdate()) FOR [LastUpdate]
+GO
+
+CREATE TABLE [Windows].[DiskInfo](
+[DiskSID] [int] IDENTITY(1,1) NOT NULL,
+[HostID] [int] NOT NULL,
+[DiskPath] [nvarchar](300) NOT NULL,
+[DiskFormat] [nvarchar](25) NOT NULL,
+[DiskLabel] [nvarchar](100) NULL,
+[DiskSizeGB] [int] NOT NULL,
+[DiskFreeGB] [int] NOT NULL,
+[DiskUsedGB] AS ([DiskSizeGB]-[DiskFreeGB]) PERSISTED,
+[CollectionDate] [datetime2] NOT NULL,
+CONSTRAINT [pk__DiskInfo_DiskSID] PRIMARY KEY CLUSTERED
+(
+[DiskSID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [DefFG]
+) ON [DefFG]
+ 
+GO
+ 
+SET ANSI_PADDING OFF
+GO
+ 
+ALTER TABLE [Windows].[DiskInfo] ADD DEFAULT (getdate()) FOR [CollectionDate]
+GO
+ 
+ALTER TABLE [Windows].[DiskInfo] WITH CHECK ADD CONSTRAINT [fk__DiskInfo_HostID] FOREIGN KEY([HostID])
+REFERENCES [Windows].[MasterServerList] ([HostID])
+GO
+ 
+ALTER TABLE [Windows].[DiskInfo] CHECK CONSTRAINT [fk__DiskInfo_HostID]
+GO
+ 
+ALTER TABLE [Windows].[DiskInfo] WITH CHECK ADD CONSTRAINT [ck__DiskInfo_DiskSizes] CHECK (([DiskUsedGB]>=(0) AND [DiskSizeGB]>=(0) AND [DiskFreeGB]>=(0)))
+GO
+ 
+ALTER TABLE [Windows].[DiskInfo] CHECK CONSTRAINT [ck__DiskInfo_DiskSizes]
+GO
+ 
+/****** Object: Table [Windows].[DbFileStats] Script Date: 4/10/2013 11:27:42 PM ******/
+SET ANSI_NULLS ON
+GO
+ 
+SET QUOTED_IDENTIFIER ON
+GO
+ 
+CREATE TABLE [Windows].[DbFileStats](
+[DbFileStatsSID] [int] IDENTITY(1,1) NOT NULL,
+[HostID] [int] NOT NULL,
+[DbName] [sysname] NOT NULL,
+[FileLogicalName] [sysname] NOT NULL,
+[FilePhysicalName] [sysname] NOT NULL,
+[FileSizeInGB] [numeric](18, 4) NOT NULL,
+[SizeFreeInGB] [numeric](18, 4) NOT NULL,
+[CollectionDate] [datetime2] NOT NULL,
+CONSTRAINT [pk__DbFileStatsSID_SID] PRIMARY KEY CLUSTERED
+(
+[DbFileStatsSID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [DefFG]
+) ON [DefFG]
+ 
+GO
+ 
+ALTER TABLE [Windows].[DbFileStats] ADD DEFAULT (getdate()) FOR [CollectionDate]
+GO
+ 
+ALTER TABLE [Windows].[DbFileStats] WITH CHECK ADD FOREIGN KEY([HostID])
+REFERENCES [Windows].[MasterServerList] ([HostID])
+GO
+ 
+ 
+USE [DBAWindows]
+GO
+ 
+/****** Object: Table [Windows].[TableStats] Script Date: 4/10/2013 11:28:04 PM ******/
+SET ANSI_NULLS ON
+GO
+ 
+SET QUOTED_IDENTIFIER ON
+GO
+ 
+CREATE TABLE [Windows].[TableStats](
+[TableStatsSID] [int] IDENTITY(1,1) NOT NULL,
+[HostID] [int] NOT NULL,
+[DbName] [sysname] NOT NULL,
+[SchemaName] [sysname] NOT NULL,
+[TableName] [sysname] NOT NULL,
+[TotalRowCount] [bigint] NOT NULL,
+[DataSizeInGB] [numeric](18, 4) NOT NULL,
+[IndexSizeInGB] [numeric](18, 4) NOT NULL,
+[CollectionDate] [smalldatetime] NOT NULL,
+CONSTRAINT [pk__TableStatsSID_SID] PRIMARY KEY CLUSTERED
+(
+[TableStatsSID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [DefFG]
+) ON [DefFG]
+ 
+GO
+ 
+ALTER TABLE [Windows].[TableStats] ADD DEFAULT (getdate()) FOR [CollectionDate]
+GO
+ 
+ALTER TABLE [Windows].[TableStats] WITH CHECK ADD FOREIGN KEY([HostID])
+REFERENCES [Windows].[MasterServerList] ([HostID])
+GO
+
 
 IF  EXISTS (SELECT * FROM sys.foreign_keys WHERE object_id = OBJECT_ID(N'[Windows].[FK_HostDiskInfo_HostID]') AND parent_object_id = OBJECT_ID(N'[Windows].[HostDiskInfo]'))
 ALTER TABLE [Windows].[HostDiskInfo] DROP CONSTRAINT [FK_HostDiskInfo_HostID]
