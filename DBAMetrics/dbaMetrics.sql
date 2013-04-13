@@ -134,10 +134,6 @@ GO
 ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [DF_Instance_LastUpdate] DEFAULT (getdate()) FOR [LastUpdate]
 GO
 
-INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (1, 'sql1')
-INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (2, 'sql2\hr')
-INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (2, 'sql2\Finance')
-
 CREATE PROCEDURE Windows.Instance_Select_InstanceID_InstanceName 
 	@IsActive nchar(1) = 'Y'
 AS
@@ -167,6 +163,10 @@ BEGIN
 	WHERE InstanceID = @InstanceID;
 END
 GO
+
+INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (1, 'sql1')
+INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (2, 'sql2\hr')
+INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (2, 'sql2\Finance')
 
 CREATE TABLE [Windows].[Storage](
 	  [RecordID] [int] IDENTITY(1,1) NOT NULL
@@ -319,8 +319,8 @@ CREATE TABLE [Windows].[TableStats](
 	[SchemaName] [sysname] NOT NULL,
 	[TableName] [sysname] NOT NULL,
 	[TotalRowCount] [bigint] NOT NULL,
-	[DataSizeInMB] [numeric](18, 4) NOT NULL,
-	[IndexSizeInMB] [numeric](18, 4) NOT NULL,
+	[DataSizeInMB] [int] NOT NULL,
+	[IndexSizeInMB] [int] NOT NULL,
 	[CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__TableStatsID_ID] PRIMARY KEY CLUSTERED
 (
