@@ -4,3 +4,4 @@
 	a. logins only (no nested group names)
 	b. If a group has nested groups, get their individual members as well
 4. Function to get all Windows users who has sa rights to an instance.
+Fake change just to test the new github shell
