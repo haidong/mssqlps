@@ -1,0 +1,6 @@
+1. Install pster and take notes;
+2. Install AD PowerShell modules and take notes;
+3. Use Pester, write a function to get group members:
+	a. logins only (no nested group names)
+	b. If a group has nested groups, get their individual members as well
+4. Function to get all Windows users who has sa rights to an instance.
