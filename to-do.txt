@@ -1,7 +1,17 @@
 1. Install pster and take notes;
-2. Install AD PowerShell modules and take notes;
-3. Use Pester, write a function to get group members:
+	(new-object Net.WebClient).DownloadString("http://bit.ly/GetPsGet") | iex
+	import-module PsGet
+	install-module Pester
+2. Play with Pester and follow the first test case
+	New-Fixture -path folderName -name functionName
+	Note: The command above creates a PowerShell function file and its test file in folderName. What I decided for now is to create a folder called Dev, because I'd prefer a separation of actual function files and their tests in their final release.
+	Then while in folderName, run Invoke-Pester to run the tests. So far it works well.
+3. Install AD PowerShell modules. At this stage please make sure you are running PowerShell under Administrator. You need to specifically pick "Run as Administrator", even if the account you logged in as has local admin privileges.Ignore the warning about "Windows automatic update" if you have Windows automatic update turned off.
+	Import-Module ServerManager
+	Get-WindowsFeature
+	Add-WindowsFeature RSAT-AD-PowerShell
+	Add-WindowsFeature RSAT-AD-AdminCenter
+4. Use Pester, write a function to get group members:
 	a. logins only (no nested group names)
 	b. If a group has nested groups, get their individual members as well
-4. Function to get all Windows users who has sa rights to an instance.
-Fake change just to test the new github shell
+5. Function to get all Windows users who has sa rights to an instance.
