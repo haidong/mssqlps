@@ -11,7 +11,10 @@
 	Get-WindowsFeature
 	Add-WindowsFeature RSAT-AD-PowerShell
 	Add-WindowsFeature RSAT-AD-AdminCenter
+To look at what CmdLet and functions are provided by a module, use Get-Command -Module <ModuleName>
 4. Use Pester, write a function to get group members:
 	a. logins only (no nested group names)
 	b. If a group has nested groups, get their individual members as well
 5. Function to get all Windows users who has sa rights to an instance.
+
+For scanning SQL Server error log and SQL Server Agent log, I will be using Get-WinEvent, since it is faster than Get-EventLog. Get-WinEvent only works for servers running Windows 2008 and above.
