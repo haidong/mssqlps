@@ -1,5 +1,6 @@
 #Base Functions for SQL Server administration
 Import-Module sqlps -DisableNameChecking
+Import-Module ActiveDirectory
 function getInstanceVersion($ServerInstance)
 {
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "SELECT SERVERPROPERTY('ProductVersion')"
@@ -108,4 +109,18 @@ ORDER BY a3.name
 		[void] $dataIndexArray.add($myHashtable)
 	}
 	$dataIndexArray
+}
+function getGroupMember($GroupName)
+{
+	$results = Get-ADGroupMember -Identity $GroupName -recursive | where {
+        $_.objectClass -eq 'user'}
+    $userArray = New-Object System.Collections.ArrayList
+    $results | foreach {
+        $a = Get-ADUser $_.SamAccountName -Properties `
+        GivenName,Surname,OfficePhone,Mail
+        $userHashTable = @{FullName = $a.GivenName + ' ' + $a.Surname;
+        OfficePhone = $a.OfficePhone; EMail = $a.Mail }
+        [void] $userArray.add($userHashTable)
+    }
+	$userArray
 }
