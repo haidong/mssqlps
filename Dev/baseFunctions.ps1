@@ -1,5 +1,11 @@
 #Base Functions for SQL Server administration
+
+#Due to errors with AD that I don't quite understand yet, Get-ADUser can spit
+#out ADIdentityNotFoundException. Setting $ErrorActionPreference to
+#"SilentlyContinue" solved it.
+$ErrorActionPreference = "SilentlyContinue"
 Import-Module sqlps -DisableNameChecking
+Import-Module ActiveDirectory
 function getInstanceVersion($ServerInstance)
 {
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "SELECT SERVERPROPERTY('ProductVersion')"
@@ -108,4 +114,19 @@ ORDER BY a3.name
 		[void] $dataIndexArray.add($myHashtable)
 	}
 	$dataIndexArray
+}
+function getGroupMember($GroupName)
+{
+	$results = Get-ADGroupMember -Identity $GroupName -recursive | where {
+        $_.objectClass -eq 'user'}
+    $userArray = New-Object System.Collections.ArrayList
+    $results | foreach {
+        $a = Get-ADUser $_.SID -Properties `
+        GivenName,Surname,OfficePhone,Mail
+        $userHashTable = @{FullName = $a.GivenName + ' ' + $a.Surname;
+        OfficePhone = $a.OfficePhone; EMail = $a.Mail; UserPrincipalName =`
+        $a.UserPrincipalName }
+        [void] $userArray.add($userHashTable)
+    }
+    $userArray
 }
