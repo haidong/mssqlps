@@ -151,6 +151,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
+	IF NOT EXISTS (SELECT * FROM Windows.Instance WHERE InstanceName = @InstanceName)
 	INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (@HostID, @InstanceName);
 END
 GO
