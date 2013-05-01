@@ -42,11 +42,25 @@ Describe "getADUserWithSqlSaPermission" {
 
         It "checks member count" {
             $a = getADUserWithSqlSaPermission("sql1")
-            $a
             $a.Count | Should Be 5
         }
         It "checks bogey has sysadmin to sql1 default instance" {
             $a = getADUserWithSqlSaPermission("sql1")
             $a[2].FullName | Should Be "bogey "
+        }
+}
+Describe "getSqlInstanceName" {
+
+        It "checks the default instance" {
+            $a = getSqlInstanceName("sql1")
+            $a | Should Be "sql1"
+        }
+        It "checks named instances on a server" {
+            $a = getSqlInstanceName("sql2")
+            $a[0] | Should Be "sql2\finance"
+        }
+        It "checks when no SQL Server is installed" {
+            $a = getSqlInstanceName("DCServer")
+            $a | Should Be $null
         }
 }

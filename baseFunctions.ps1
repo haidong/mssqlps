@@ -1,5 +1,11 @@
 #Base Functions for SQL Server administration
-Import-Module sqlps
+
+#Due to errors with AD that I don't quite understand yet, Get-ADUser can spit
+#out ADIdentityNotFoundException. Setting $ErrorActionPreference to
+#"SilentlyContinue" solved it.
+$ErrorActionPreference = "SilentlyContinue"
+Import-Module sqlps -DisableNameChecking
+Import-Module ActiveDirectory
 function getInstanceVersion($ServerInstance)
 {
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "SELECT SERVERPROPERTY('ProductVersion')"
@@ -108,4 +114,71 @@ ORDER BY a3.name
 		[void] $dataIndexArray.add($myHashtable)
 	}
 	$dataIndexArray
+}
+#Although the function parameter is called $SID, in reality one can pass in
+#other from of unique identifier as well, such as its name.
+function getADUserInfo($SID)
+{
+    $a = Get-ADUser $SID -Properties GivenName,Surname,OfficePhone,Mail
+    $userHashTable = @{FullName = $a.GivenName + ' ' + $a.Surname;
+    OfficePhone = $a.OfficePhone; EMail = $a.Mail; UserPrincipalName =`
+    $a.UserPrincipalName }
+    $userHashTable
+}
+function getGroupMember($GroupName)
+{
+	$results = Get-ADGroupMember -Identity $GroupName -recursive | where {
+        $_.objectClass -eq 'user'}
+    $userArray = New-Object System.Collections.ArrayList
+    $results | foreach {
+        $a = getADUserInfo $_.SID 
+        [void] $userArray.add($a)
+    }
+    $userArray | sort { $_.UserPrincipalName } -uniq
+}
+function getADUserWithSqlSaPermission($ServerInstance)
+{
+    #Let's get individual Windows login first. Then we'll get Windows group
+    #members
+    $sql = @"
+    SELECT name FROM Master.sys.server_principals
+    WHERE is_disabled = 0 AND type = 'u' AND IS_SRVROLEMEMBER('sysadmin',
+    name) = 1 AND name NOT LIKE 'NT service%'
+"@
+	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $sql
+    $userArray = New-Object System.Collections.ArrayList
+	$results | foreach {
+        $userName = $_.name.split("\")[1]
+        $a = getADUserInfo $userName
+        [void] $userArray.add($a)
+    }
+    #Let's now get AD users that belong to a AD group
+    $sql = @"
+    SELECT name FROM Master.sys.server_principals
+    WHERE is_disabled = 0 AND type = 'g' AND IS_SRVROLEMEMBER('sysadmin',
+    name) = 1
+"@
+	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $sql
+	$results | foreach {
+        $groupName = $_.name.split("\")[1]
+        $a = getGroupMember $groupName
+        $userArray = $userArray + $a
+    }
+    $userArray | sort { $_.UserPrincipalName } -uniq
+}
+function getSqlInstanceName($ComputerName)
+{
+	$a = Get-Service -ComputerName $ComputerName | where {($_.Name -like
+    'mssql$*') -or ($_.Name -eq 'mssqlserver')}
+    $instanceNameArray = New-Object System.Collections.ArrayList
+	$a | foreach {
+        if ($_.Name -eq 'mssqlserver') {
+            [void] $instanceNameArray.add($ComputerName)
+        }
+        else {
+            [void] $instanceNameArray.add($ComputerName + "\" +
+            $_.Name.split("$")[1])
+        }
+    }
+    $instanceNameArray
 }
