@@ -10,7 +10,6 @@ GO
 CREATE SCHEMA [Windows] AUTHORIZATION [dbo]
 GO
 
-/****** Object:  Table [Windows].[Host]    Script Date: 06/05/2012 17:23:16 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -145,6 +144,17 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE Windows.Instance_Insert 
+       	@HostID int
+	, @InstanceName nvarchar(30)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (@HostID, @InstanceName);
+END
+GO
+
 CREATE PROCEDURE Windows.Instance_Update 
 	  @InstanceID int = 0
 	, @InstanceEdition nvarchar(50) = NULL
@@ -163,10 +173,6 @@ BEGIN
 	WHERE InstanceID = @InstanceID;
 END
 GO
-
-INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (1, 'sql1')
-INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (2, 'sql2\hr')
-INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (2, 'sql2\Finance')
 
 CREATE TABLE [Windows].[Storage](
 	  [RecordID] [int] IDENTITY(1,1) NOT NULL
