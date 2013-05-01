@@ -16,6 +16,7 @@ and install the following:
 3. Microsoft Windows PowerShell Extensions for Microsoft SQL Server 2012
 
 To install ActiveDirectory related modules, please do the following (This applies to Windows Server 2008 R2 and Windows 2012. Instructions for Windows XP, 7, and 8 will be provided as I come across them. Or you can provide a patch to this documentation!):
+
 1. Run PowerShell as administrator. You need to specifically pick "Run as Administrator", even if the account you logged in as has local admin privileges.
 2. Import-Module ServerManager
 3. Add-WindowsFeature RSAT-AD-PowerShell
