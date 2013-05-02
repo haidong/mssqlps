@@ -6,8 +6,6 @@ $InstanceID = $_.InstanceID
 
 Try {
     $result = Invoke-Sqlcmd -ServerInstance $InstanceName -Query "SELECT SERVERPROPERTY('Edition')"
-    }
-Catch { Continue }
 $InstanceEdition = $result.column1
 $result = Invoke-Sqlcmd -ServerInstance $InstanceName -Query "SELECT SERVERPROPERTY('ProductVersion')"
 $InstanceVersion = $result.column1
@@ -16,4 +14,6 @@ $InstanceServicePack = $result.column1
 
 $sql = "EXEC Windows.Instance_Update $InstanceID, '$InstanceEdition', '$InstanceVersion', '$InstanceServicePack'"
 Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "DBAMetrics"
+    }
+Catch { Return }
 }

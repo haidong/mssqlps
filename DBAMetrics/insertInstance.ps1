@@ -25,7 +25,7 @@ $a | foreach {
     Try {
         $b = getSqlInstanceName($_.HostName) }
     Catch {
-        continue }
+        Return }
     $b | foreach {
         $InstanceName = $_.InstanceName
         if ($InstanceName -ne $null) {
