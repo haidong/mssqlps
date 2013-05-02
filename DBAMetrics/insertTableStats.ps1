@@ -64,10 +64,16 @@ function storeDataIndexIntoDBAMetrics($sql)
 $serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "DBAMetrics" -Query $sql
 $serverResults | forEach {
 $ServerInstance, $ServerSID = $_.InstanceName, $_.InstanceID
+Try {
 $dbResults = getInstanceUserDb -ServerInstance $ServerInstance
+}
+Catch { Return }
 $dbResults | ForEach {
 $dbName = $_.name
+Try {
 $a = getDbDataIndexSizeInMB -ServerInstance $ServerInstance -DbName $dbName
+}
+Catch { Return }
 $a | ForEach {
 if ($_.Schema)
 {
@@ -75,6 +81,8 @@ $SchemaName, $tableName, $TotalRowCount, $DataSizeInMB, $IndexSizeInMB = $_.Sche
 $sql = "EXEC Windows.TableStats_Insert $ServerSID, '$DbName', '$SchemaName', $tableName, $TotalRowCount, $DataSizeInMB, $IndexSizeInMB"
 Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "DBAMetrics"
 } } } } }
+
+
 $sql = @"
 Windows.Instance_Select_InstanceID_InstanceName
 "@

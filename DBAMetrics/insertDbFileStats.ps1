@@ -33,10 +33,16 @@ function storeDbFileInfo($sql)
 $serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "DBAMetrics" -Query $sql
 $serverResults | forEach {
 $InstanceName, $InstanceID = $_.InstanceName, $_.InstanceID
+Try {
 $dbResults = getInstanceUserDb -ServerInstance $InstanceName
+}
+Catch { Return }
 $dbResults | ForEach {
 $dbName = $_.name
+Try {
 $a = getDbFileInfo -ServerInstance $InstanceName -DbName $dbName
+}
+Catch { Return }
 $a | ForEach {
 if ($_.FileLogicalName)
 {
@@ -44,6 +50,8 @@ $FileLogicalName, $FilePhysicalName, $FileGroupName, $FileSizeInMB, $FreeSizeInM
 $sql = "EXEC Windows.DbFileStats_Insert $InstanceID, '$DbName', '$FileLogicalName', '$FilePhysicalName', '$FileGroupName', $FileSizeInMB, $FreeSizeInMB, $max_size, $growth, '$is_percent_growth'"
 Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "DBAMetrics"
 } } } } }
+
+
 $sql = @"
 Windows.Instance_Select_InstanceID_InstanceName
 "@
