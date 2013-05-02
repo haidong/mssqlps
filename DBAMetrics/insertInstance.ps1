@@ -6,11 +6,13 @@ function getSqlInstanceName($ComputerName)
     if ($a -ne $null) {
         $a | foreach {
             if ($_.Name -eq 'mssqlserver') {
-                [void] $instanceNameArray.add($ComputerName)
+                [void]
+                $instanceNameArray.add(@{InstanceName=$ComputerName;Status=$_.Status})
             }
             else {
-                [void] $instanceNameArray.add($ComputerName + "\" +
-                $_.Name.split("$")[1])
+                [void]
+                $instanceNameArray.add(@{InstanceName=$ComputerName + "\" +
+                $_.Name.split("$")[1];Status=$_.Status})
             }
         }
     }
@@ -22,9 +24,14 @@ $a | foreach {
     $HostID = $_.HostID
     $b = getSqlInstanceName($_.HostName)
     $b | foreach {
-        $InstanceName = $_
+        $InstanceName = $_.InstanceName
         if ($InstanceName -ne $null) {
-            $sql = "EXEC Windows.Instance_Insert $HostID, '$InstanceName'"
+            if ($_.Status -eq 'running') {
+                $IsActive = "Y"}
+            else {
+                $IsActive = "N"}
+            $sql = "EXEC Windows.Instance_Insert $HostID, '$InstanceName',
+            '$IsActive'"
             Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database `
             "DBAMetrics"
         }

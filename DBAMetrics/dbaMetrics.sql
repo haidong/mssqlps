@@ -147,12 +147,13 @@ GO
 CREATE PROCEDURE Windows.Instance_Insert 
        	@HostID int
 	, @InstanceName nvarchar(30)
+	, @IsActive nvarchar(1)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	IF NOT EXISTS (SELECT * FROM Windows.Instance WHERE InstanceName = @InstanceName)
-	INSERT INTO [Windows].[Instance] (HostID, InstanceName) VALUES (@HostID, @InstanceName);
+	INSERT INTO [Windows].[Instance] (HostID, InstanceName, IsActive) VALUES (@HostID, @InstanceName, @IsActive);
 END
 GO
 
