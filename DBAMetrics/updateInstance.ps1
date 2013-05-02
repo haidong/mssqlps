@@ -4,7 +4,10 @@ $a | ForEach-Object {
 $InstanceName = $_.InstanceName
 $InstanceID = $_.InstanceID
 
-$result = Invoke-Sqlcmd -ServerInstance $InstanceName -Query "SELECT SERVERPROPERTY('Edition')"
+Try {
+    $result = Invoke-Sqlcmd -ServerInstance $InstanceName -Query "SELECT SERVERPROPERTY('Edition')"
+    }
+Catch { Continue }
 $InstanceEdition = $result.column1
 $result = Invoke-Sqlcmd -ServerInstance $InstanceName -Query "SELECT SERVERPROPERTY('ProductVersion')"
 $InstanceVersion = $result.column1
