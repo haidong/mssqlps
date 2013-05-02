@@ -22,7 +22,10 @@ $a = Invoke-Sqlcmd -ServerInstance "sql1" -Query "EXEC
 Windows.Host_Select_HostID_HostName" -Database "DBAMetrics"
 $a | foreach {
     $HostID = $_.HostID
-    $b = getSqlInstanceName($_.HostName)
+    Try {
+        $b = getSqlInstanceName($_.HostName) }
+    Catch {
+        continue }
     $b | foreach {
         $InstanceName = $_.InstanceName
         if ($InstanceName -ne $null) {
