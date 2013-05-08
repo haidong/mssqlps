@@ -1,5 +1,6 @@
 param([parameter(Mandatory=$true)]$ServerInstance)
-. "X:\pathTo\baseFunctions.ps1"
+# *** Note: modify the line below so we can souce in baseFunctions.ps1
+. "C:\Users\alex\Documents\GitHub\mssqlps\baseFunctions.ps1"
 try {
 $results = Invoke-Sqlcmd -Query "select @@servername" -ServerInstance $ServerInstance
 }
@@ -8,12 +9,18 @@ catch {
 exit
 }
 
-$serverName = $results.column1.replace('\', '_')
+if ($results.column1.Contains("\")) {
+    $ServerName, $InstanceName = $results.column1.split("\")
+}
+else {
+    $ServerName, $InstanceName = $results.column1, "Default"}
 $serverDate = Get-Date -format "yyyy_MM_dd"
-$savedScriptPath = "C:\users\Administrator\Documents\work\"
+# *** Note: modify the folder name below so scripts generated are saved in the
+# right place
+$savedScriptPath = "C:\users\Alex\Documents\work\"
 
 #Step 1 Save SQL Server metadata: credentials, logins, linked servers, resource pools, server triggers, proxy accounts, job categories, and jobs
-$fileName = $savedScriptPath + $serverName + "_configuration" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $ServerName + "_" + $InstanceName + "_configuration" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for SQL instance level objects"
 
 # Generate script for Credentials since sqlps does not have a method for it!
@@ -25,38 +32,39 @@ from
 order by name;
 "@
 
-$results = Invoke-Sqlcmd -Query $credentialQuery -ServerInstance $serverName -SuppressProviderContextWarning
+$results = Invoke-Sqlcmd -Query $credentialQuery -ServerInstance `
+$ServerInstance -SuppressProviderContextWarning
 Add-Content $fileName "--Credentials"
 $results | ForEach-Object {
 	Add-Content $fileName $_.cred
 }
 
 Add-Content $fileName "--Logins"
-cd SQLSERVER:\sql\$serverName\Default\Logins
+cd SQLSERVER:\sql\$serverName\$InstanceName\Logins
 get-childitem | %{$_.Script()} | Add-Content $fileName
 
 Add-Content $fileName "--LinkedServers"
-cd SQLSERVER:\sql\$serverName\Default\LinkedServers
+cd SQLSERVER:\sql\$serverName\$InstanceName\LinkedServers
 get-childitem | %{$_.Script()} | Add-Content $fileName
 
 Add-Content $fileName "--ResourcePools"
-cd SQLSERVER:\sql\$serverName\Default\ResourceGovernor\ResourcePools
+cd SQLSERVER:\sql\$serverName\$InstanceName\ResourceGovernor\ResourcePools
 get-childitem | %{$_.Script()} | Add-Content $fileName
 
 Add-Content $fileName "--ServerTriggers"
-cd SQLSERVER:\sql\$serverName\Default\Triggers
+cd SQLSERVER:\sql\$serverName\$InstanceName\Triggers
 get-childitem | %{$_.Script()} | Add-Content $fileName
 
 Add-Content $fileName "--ProxyAccounts"
-cd SQLSERVER:\sql\$serverName\Default\JobServer\ProxyAccounts
+cd SQLSERVER:\sql\$serverName\$InstanceName\JobServer\ProxyAccounts
 get-childitem | %{$_.Script()} | Add-Content $fileName
 
 Add-Content $fileName "--JobCategories"
-cd SQLSERVER:\sql\$serverName\Default\JobServer\JobCategories
+cd SQLSERVER:\sql\$serverName\$InstanceName\JobServer\JobCategories
 get-childitem | %{$_.Script()} | Add-Content $fileName
 
 Add-Content $fileName "--Jobs"
-cd SQLSERVER:\sql\$serverName\Default\JobServer\Jobs
+cd SQLSERVER:\sql\$serverName\$InstanceName\JobServer\Jobs
 get-childitem | %{$_.Script()} | Add-Content $fileName
 
 "Successfully scripted metadata for instance $ServerInstance. It was saved in file $fileName"
@@ -65,7 +73,7 @@ get-childitem | %{$_.Script()} | Add-Content $fileName
 $results = getInstanceUserDb -ServerInstance $ServerInstance
 
 #Step 2 Generate DBCC CHECKDB command to make sure it is in a stable state before detaching
-$fileName = $savedScriptPath + $serverName + "_Step1_DBCC" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_" + $InstanceName + "_Step1_DBCC" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for checking all user databases integrity with DBCC on $ServerInstance"
 $results | ForEach-Object {
 	Add-Content $fileName ("--" + $_.name)
@@ -77,7 +85,7 @@ $results | ForEach-Object {
 "Successfully generated DBCC CHECKDB script for instance $ServerInstance. It was saved in file $fileName"
 
 #Step 3 Generate detach script
-$fileName = $savedScriptPath + $serverName + "_Step2_detach" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_" + $InstanceName + "_Step2_detach" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for detaching all user databases on $ServerInstance"
 $results | ForEach-Object {
 	Add-Content $fileName ("--" + $_.name)
@@ -88,7 +96,7 @@ $results | ForEach-Object {
 "Successfully generated detach script for instance $ServerInstance. It was saved in file $fileName"
 
 #Step 4 Generate attach script, to be used after upgrade. It also changes db ownership to SA and set compatibility level to 110
-$fileName = $savedScriptPath + $serverName + "_Step3_attach" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_" + $InstanceName + "_Step3_attach" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for attaching all user databases on $ServerInstance"
 $results | ForEach-Object {
 	Add-Content $fileName ("--" + $_.name)
@@ -114,14 +122,15 @@ SELECT 'ALTER DATABASE ' + name + ' SET QUOTED_IDENTIFIER '                + CAS
 SELECT 'ALTER DATABASE ' + name + ' SET READ_COMMITTED_SNAPSHOT  '   + CASE WHEN is_read_committed_snapshot_on = 1 THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
 "@
 
-$dbPropertyResults = Invoke-Sqlcmd -Query $dbPropertyQuery -ServerInstance $serverName -SuppressProviderContextWarning
+$dbPropertyResults = Invoke-Sqlcmd -Query $dbPropertyQuery -ServerInstance `
+$ServerInstance -SuppressProviderContextWarning
 $dbPropertyResults | ForEach-Object {
 	Add-Content $fileName $_.Column1
 }
 "Successfully generated attach script for instance $ServerInstance. It was saved in file $fileName"
 
 #Step 5 Generate update stats scripts for use after upgrade is complete.
-$fileName = $savedScriptPath + $serverName + "_Step4_UpdateStats" + "_$serverDate.sql"
+$fileName = $savedScriptPath + $serverName + "_" + $InstanceName + "_Step4_UpdateStats" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for updating database stats after upgrade is complete"
 $results | ForEach-Object {
 	Add-Content $fileName ("USE " + $_.name)
@@ -130,3 +139,5 @@ $results | ForEach-Object {
 	Add-Content $fileName ("GO")
 }
 "Successfully generated stats update script for instance $ServerInstance. It was saved in file $fileName"
+
+C:

@@ -13,19 +13,22 @@ function getInstanceVersion($ServerInstance)
 }
 function getInstanceUserDb($ServerInstance)
 {
-	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name from master.sys.databases where name not in ('master', 'model', 'msdb', 'tempdb')"
+	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name from master.sys.databases where name not in ('master', 'model', 'msdb',
+    'tempdb')" -SuppressProviderContextWarning
 	$results
 }
 function getUserDbDatafile($ServerInstance, $DbName)
 {
 	$Query = "select physical_name from $DbName.sys.database_files where type <> 1 order by file_id"
-	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query
+	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query `
+    -SuppressProviderContextWarning
 	$results
 }
 function getUserDbLogfile($ServerInstance, $DbName)
 {
 	$Query = "select physical_name from $DbName.sys.database_files where type = 1 order by file_id"
-	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query
+	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query `
+    -SuppressProviderContextWarning
 	$results
 }
 function generateAttachScript($ServerInstance, $DbName)
