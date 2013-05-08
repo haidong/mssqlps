@@ -19,14 +19,14 @@ function getInstanceUserDb($ServerInstance)
 }
 function getUserDbDatafile($ServerInstance, $DbName)
 {
-	$Query = "select physical_name from $DbName.sys.database_files where type <> 1 order by file_id"
+	$Query = "select physical_name from [$DbName].sys.database_files where type <> 1 order by file_id"
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query `
     -SuppressProviderContextWarning
 	$results
 }
 function getUserDbLogfile($ServerInstance, $DbName)
 {
-	$Query = "select physical_name from $DbName.sys.database_files where type = 1 order by file_id"
+	$Query = "select physical_name from [$DbName].sys.database_files where type = 1 order by file_id"
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query `
     -SuppressProviderContextWarning
 	$results
