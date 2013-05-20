@@ -15,6 +15,7 @@ To look at what CmdLet and functions are provided by a module, use Get-Command -
 4. Use Pester, write a function to get group members:
 	a. logins only (no nested group names)
 	b. If a group has nested groups, get their individual members as well
+5. Write a delete nibbler
 6. Function to project backup and restore time based on progress and history:
 SELECT command,
 s.text,
@@ -42,3 +43,5 @@ where is_disabled = 0 and type = 'G' and IS_SRVROLEMEMBER('sysadmin', name) = 1
 select name, * from sys.server_principals
 where is_disabled = 0 and type = 'u' and IS_SRVROLEMEMBER('sysadmin', name) = 1
 
+7. Now I am trying to get Tengine working:
+sudo apt-get install libpcre3-dev for PCRE library
