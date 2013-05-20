@@ -14,7 +14,7 @@ function getInstanceVersion($ServerInstance)
 function getInstanceUserDb($ServerInstance)
 {
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name from master.sys.databases where name not in ('master', 'model', 'msdb',
-    'tempdb')" -SuppressProviderContextWarning
+    'tempdb') and state_desc = 'ONLINE'" -SuppressProviderContextWarning
 	$results
 }
 function getUserDbDatafile($ServerInstance, $DbName)

@@ -10,8 +10,8 @@ catch [Exception] {
 continue
 }
 $b | foreach {
-$DiskSizegB = $_.Capacity / 1gb
-$DiskFreeGB = $_.FreeSpace / 1gb
+$DiskSizegB = ($_.Capacity / 1gb) + 1
+$DiskFreeGB = ($_.FreeSpace / 1gb) + 1
 $DiskPath, $DiskFormat, $DiskLabel = $_.Name, $_.FileSystem, $_.Label
 $sql = "EXEC Windows.Storage_Insert $HostID, '$DiskPath', '$DiskFormat', '$DiskLabel', $DiskSizeGB, $DiskFreeGB"
 Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "DBAMetrics"

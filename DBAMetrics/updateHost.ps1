@@ -13,7 +13,7 @@ continue
 $Domain = $b.Domain
 $HardwareVendor = $b.Manufacturer
 $HardwareModel = $b.Model
-$MemorySizeGB = $b.TotalPhysicalMemory / 1gb
+$MemorySizeGB = ($b.TotalPhysicalMemory / 1gb) + 1
 
 try {
 $b = get-wmiobject -computername $HostName -Class Win32_Processor | select -first 1
