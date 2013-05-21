@@ -111,10 +111,10 @@ group by a3.name
 ORDER BY a3.name
 "@
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query
-	$dataIndexArray = New-Object System.Collections.ArrayList
+	$dataIndexArray = @()
 	$results | foreach {
 		$myHashtable = @{schema = $_.schemaname; dataSizeInGB = $_.dataGB; indexSizeInGB = $_.index_sizeGB; numberOfTables = $_.NumberOfTables; totalRowCount = $_.row_count}
-		[void] $dataIndexArray.add($myHashtable)
+		$dataIndexArray += $myHashtable
 	}
 	$dataIndexArray
 }
@@ -132,10 +132,10 @@ function getGroupMember($GroupName)
 {
 	$results = Get-ADGroupMember -Identity $GroupName -recursive | where {
         $_.objectClass -eq 'user'}
-    $userArray = New-Object System.Collections.ArrayList
+    $userArray = @()
     $results | foreach {
         $a = getADUserInfo $_.SID 
-        [void] $userArray.add($a)
+        $userArray += $a
     }
     $userArray | sort { $_.UserPrincipalName } -uniq
 }
@@ -149,11 +149,11 @@ function getADUserWithSqlSaPermission($ServerInstance)
     name) = 1 AND name NOT LIKE 'NT service%'
 "@
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $sql
-    $userArray = New-Object System.Collections.ArrayList
+    $userArray = @()
 	$results | foreach {
         $userName = $_.name.split("\")[1]
         $a = getADUserInfo $userName
-        [void] $userArray.add($a)
+        $userArray += $a
     }
     #Let's now get AD users that belong to a AD group
     $sql = @"
@@ -165,7 +165,7 @@ function getADUserWithSqlSaPermission($ServerInstance)
 	$results | foreach {
         $groupName = $_.name.split("\")[1]
         $a = getGroupMember $groupName
-        $userArray = $userArray + $a
+        $userArray += $a
     }
     $userArray | sort { $_.UserPrincipalName } -uniq
 }
@@ -173,13 +173,13 @@ function getSqlInstanceName($ComputerName)
 {
 	$a = Get-Service -ComputerName $ComputerName | where {($_.Name -like
     'mssql$*') -or ($_.Name -eq 'mssqlserver')}
-    $instanceNameArray = New-Object System.Collections.ArrayList
+    $instanceNameArray = @()
 	$a | foreach {
         if ($_.Name -eq 'mssqlserver') {
-            [void] $instanceNameArray.add($ComputerName)
+            $instanceNameArray += $ComputerName
         }
         else {
-            [void] $instanceNameArray.add($ComputerName + "\" +
+            $instanceNameArray += ($ComputerName + "\" +
             $_.Name.split("$")[1])
         }
     }
