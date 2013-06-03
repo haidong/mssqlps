@@ -1,6 +1,8 @@
 function getInstanceUserDb($ServerInstance)
 {
-$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name from master.sys.databases where name not in ('master', 'model', 'msdb', 'tempdb')"
+$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name
+from master.sys.databases where name not in ('master', 'model', 'msdb',
+'tempdb') and state_desc = 'online'"
 $results
 }
 function getDbFileInfo($ServerInstance, $DbName)
@@ -17,10 +19,13 @@ a.name as FileLogicalName
 , case b.is_percent_growth
 when 1 then 'Y'
 else 'N' end as is_percent_growth
-from $DbName.sys.sysfiles a inner join $DbName.sys.database_files b on a.fileid = b.file_id
-left outer join $DbName.sys.filegroups c on a.groupid = c.data_space_id
+from [$DbName].sys.sysfiles a inner join [$DbName].sys.database_files b on a.fileid = b.file_id
+left outer join [$DbName].sys.filegroups c on a.groupid = c.data_space_id
 "@
-$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query -Database $DbName
+try {
+    $results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query -Database $DbName
+}
+catch {}
 $dataIndexArray = New-Object System.Collections.ArrayList
 $results | foreach {
 $myHashtable = @{FileLogicalName = $_.FileLogicalName; FilePhysicalName = $_.FilePhysicalName; FileGroupName = $_.FileGroupName; FileSizeInMB = $_.FileSizeInMB; FreeSizeInMB = $_.FreeSizeInMB; max_size = $_.max_size; growth = $_.growth; is_percent_growth = $_.is_percent_growth}
