@@ -33,7 +33,7 @@ function getUserDbLogfile($ServerInstance, $DbName)
 }
 function generateAttachScript($ServerInstance, $DbName)
 {
-	$attachScript = "CREATE DATABASE $DbName ON
+	$attachScript = "CREATE DATABASE [$DbName] ON
 	"
 	# First we get non-log files
 	$results = getUserDbDatafile -ServerInstance $ServerInstance -DbName $DbName
