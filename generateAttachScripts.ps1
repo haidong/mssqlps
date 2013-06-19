@@ -23,6 +23,7 @@ $results | ForEach-Object {
 
 Add-Content $fileName ("--Change db owner to sa and set compatibility level to 110" + $_.name)
 $results | ForEach-Object {
-	Add-Content $fileName ("ALTER AUTHORIZATION ON DATABASE::" + $_.name + " TO SA")
-	Add-Content $fileName ("ALTER DATABASE " + $_.name + " SET COMPATIBILITY_LEVEL = 110")
+	Add-Content $fileName ("ALTER AUTHORIZATION ON DATABASE::[" + $_.name
+    + "] TO SA")
+	Add-Content $fileName ("ALTER DATABASE [" + $_.name + "] SET COMPATIBILITY_LEVEL = 110")
 }

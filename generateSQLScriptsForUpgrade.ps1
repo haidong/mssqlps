@@ -79,7 +79,7 @@ $results | ForEach-Object {
 	Add-Content $fileName ("--" + $_.name)
 	Add-Content $fileName ("USE Master")
 	Add-Content $fileName ("GO")
-	Add-Content $fileName ("DBCC CHECKDB (" + $_.name + ", NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS")
+	Add-Content $fileName ("DBCC CHECKDB ([" + $_.name + "], NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS")
 	Add-Content $fileName ("GO")
 }
 "Successfully generated DBCC CHECKDB script for instance $ServerInstance. It was saved in file $fileName"
@@ -106,20 +106,21 @@ $results | ForEach-Object {
 }
 Add-Content $fileName ("--Change db owner to sa and set compatibility level to 110" + $_.name)
 $results | ForEach-Object {
-	Add-Content $fileName ("ALTER AUTHORIZATION ON DATABASE::" + $_.name + " TO SA")
-	Add-Content $fileName ("ALTER DATABASE " + $_.name + " SET COMPATIBILITY_LEVEL = 110")
+	Add-Content $fileName ("ALTER AUTHORIZATION ON DATABASE::[" + $_.name
+    + "] TO SA")
+	Add-Content $fileName ("ALTER DATABASE [" + $_.name + "] SET COMPATIBILITY_LEVEL = 110")
 }
 
 Add-Content $fileName ("--Reset certain customized database property values to its states prior to upgrade" + $_.name)
 $dbPropertyQuery = @"
-SELECT 'ALTER DATABASE ' + name + ' SET ANSI_NULLS '                       + CASE WHEN is_ansi_nulls_on = 1                          THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
-SELECT 'ALTER DATABASE ' + name + ' SET ANSI_PADDING '                     + CASE WHEN is_ansi_padding_on = 1                        THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
-SELECT 'ALTER DATABASE ' + name + ' SET ANSI_WARNINGS '                           + CASE WHEN is_ansi_warnings_on = 1                         THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
-SELECT 'ALTER DATABASE ' + name + ' SET ARITHABORT '                       + CASE WHEN is_arithabort_on = 1                          THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
-SELECT 'ALTER DATABASE ' + name + ' SET CONCAT_NULL_YIELDS_NULL '    + CASE WHEN is_concat_null_yields_null_on = 1 THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
-SELECT 'ALTER DATABASE ' + name + ' SET DB_CHAINING '                      + CASE WHEN is_db_chaining_on = 1                          THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
-SELECT 'ALTER DATABASE ' + name + ' SET QUOTED_IDENTIFIER '                + CASE WHEN is_quoted_identifier_on = 1              THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
-SELECT 'ALTER DATABASE ' + name + ' SET READ_COMMITTED_SNAPSHOT  '   + CASE WHEN is_read_committed_snapshot_on = 1 THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET ANSI_NULLS '                       + CASE WHEN is_ansi_nulls_on = 1                          THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET ANSI_PADDING '                     + CASE WHEN is_ansi_padding_on = 1                        THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET ANSI_WARNINGS '                           + CASE WHEN is_ansi_warnings_on = 1                         THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET ARITHABORT '                       + CASE WHEN is_arithabort_on = 1                          THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET CONCAT_NULL_YIELDS_NULL '    + CASE WHEN is_concat_null_yields_null_on = 1 THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET DB_CHAINING '                      + CASE WHEN is_db_chaining_on = 1                          THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET QUOTED_IDENTIFIER '                + CASE WHEN is_quoted_identifier_on = 1              THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
+SELECT 'ALTER DATABASE [' + name + '] SET READ_COMMITTED_SNAPSHOT  '   + CASE WHEN is_read_committed_snapshot_on = 1 THEN ' ON ' ELSE ' OFF ' END FROM sys.databases WHERE name NOT IN ('master', 'msdb', 'model', 'tempdb');
 "@
 
 $dbPropertyResults = Invoke-Sqlcmd -Query $dbPropertyQuery -ServerInstance `
@@ -133,7 +134,7 @@ $dbPropertyResults | ForEach-Object {
 $fileName = $savedScriptPath + $serverName + "_" + $InstanceName + "_Step4_UpdateStats" + "_$serverDate.sql"
 Set-Content $fileName "--Scripts for updating database stats after upgrade is complete"
 $results | ForEach-Object {
-	Add-Content $fileName ("USE " + $_.name)
+	Add-Content $fileName ("USE [" + $_.name + "]")
 	Add-Content $fileName ("GO")
 	Add-Content $fileName ("EXEC sp_updatestats")
 	Add-Content $fileName ("GO")
