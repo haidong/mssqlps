@@ -35,7 +35,7 @@ $dataIndexArray
 }
 function storeDbFileInfo($sql)
 {
-$serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "DBAMetrics" -Query $sql
+$serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "SysMetrics" -Query $sql
 $serverResults | forEach {
 $InstanceName, $InstanceID = $_.InstanceName, $_.InstanceID
 Try {
@@ -53,7 +53,7 @@ if ($_.FileLogicalName)
 {
 $FileLogicalName, $FilePhysicalName, $FileGroupName, $FileSizeInMB, $FreeSizeInMB, $max_size, $growth, $is_percent_growth = $_.FileLogicalName, $_.FilePhysicalName, $_.FileGroupName, $_.FileSizeInMB, $_.FreeSizeInMB, $_.max_size, $_.growth, $_.is_percent_growth
 $sql = "EXEC Windows.DbFileStats_Insert $InstanceID, '$DbName', '$FileLogicalName', '$FilePhysicalName', '$FileGroupName', $FileSizeInMB, $FreeSizeInMB, $max_size, $growth, '$is_percent_growth'"
-Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "DBAMetrics"
+Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
 } } } } }
 
 

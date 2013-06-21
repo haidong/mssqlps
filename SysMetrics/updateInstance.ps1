@@ -1,4 +1,4 @@
-$a = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "DBAMetrics"
+$a = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "SysMetrics"
 $a | ForEach-Object {
 
 $InstanceName = $_.InstanceName
@@ -13,7 +13,7 @@ $result = Invoke-Sqlcmd -ServerInstance $InstanceName -Query "SELECT SERVERPROPE
 $InstanceServicePack = $result.column1
 
 $sql = "EXEC Windows.Instance_Update $InstanceID, '$InstanceEdition', '$InstanceVersion', '$InstanceServicePack'"
-Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "DBAMetrics"
+Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
     }
 Catch { Return }
 }

@@ -1,6 +1,6 @@
-CREATE DATABASE DBAMetrics
+CREATE DATABASE SysMetrics
 GO
-USE [DBAMetrics]
+USE [SysMetrics]
 GO
 
 IF  EXISTS (SELECT * FROM sys.schemas WHERE name = N'Windows')

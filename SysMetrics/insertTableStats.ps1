@@ -59,9 +59,9 @@ $myHashtable = @{schema = $_.schemaname; dataSizeInMB = $_.dataMB; indexSizeInMB
 }
 $dataIndexArray
 }
-function storeDataIndexIntoDBAMetrics($sql)
+function storeDataIndexIntoSysMetrics($sql)
 {
-$serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "DBAMetrics" -Query $sql
+$serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "SysMetrics" -Query $sql
 $serverResults | forEach {
 $ServerInstance, $ServerSID = $_.InstanceName, $_.InstanceID
 Try {
@@ -79,12 +79,12 @@ if ($_.Schema)
 {
 $SchemaName, $tableName, $TotalRowCount, $DataSizeInMB, $IndexSizeInMB = $_.Schema, $_.tableName, $_.TotalRowCount, $_.DataSizeInMB, $_.IndexSizeInMB
 $sql = "EXEC Windows.TableStats_Insert $ServerSID, '$DbName', '$SchemaName', $tableName, $TotalRowCount, $DataSizeInMB, $IndexSizeInMB"
-Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "DBAMetrics"
+Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
 } } } } }
 
 
 $sql = @"
 Windows.Instance_Select_InstanceID_InstanceName
 "@
-storeDataIndexIntoDBAMetrics -sql $sql
+storeDataIndexIntoSysMetrics -sql $sql
 
