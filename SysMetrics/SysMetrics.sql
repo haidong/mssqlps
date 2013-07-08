@@ -54,6 +54,7 @@ GO
 
 ALTER TABLE [Windows].[Host] ADD CONSTRAINT [DF_Host_LastUpdate] DEFAULT (getdate()) FOR [LastUpdate]
 GO
+
 CREATE PROCEDURE Windows.Host_Select_HostID_HostName 
 	@IsActive nchar(1) = 'Y'
 AS
