@@ -106,6 +106,7 @@ CREATE TABLE [Windows].[Instance](
 	[HostID] [int] NOT NULL,
 	[InstanceName] [nvarchar](30) NULL,
 	[InstanceEdition] [nvarchar](50) NULL,
+	[InstanceEditionID] [bigint] NULL,
 	[InstanceVersion] [nchar](20) NULL,
 	[InstanceServicePack] [nvarchar](20) NULL,
 	[IsActive] [nchar](1) NOT NULL,
@@ -161,6 +162,7 @@ GO
 CREATE PROCEDURE Windows.Instance_Update 
 	  @InstanceID int = 0
 	, @InstanceEdition nvarchar(50) = NULL
+	, @InstanceEditionID bigint = NULL
 	, @InstanceVersion nvarchar(20) = NULL
 	, @InstanceServicePack nvarchar(20) = NULL
 	, @IsActive nchar(1) = 'Y'
@@ -170,6 +172,7 @@ BEGIN
 
 	UPDATE Windows.Instance SET
 	  InstanceEdition = @InstanceEdition
+	, InstanceEditionID = @InstanceEditionID
 	, InstanceVersion = @InstanceVersion
 	, InstanceServicePack = @InstanceServicePack
 	, IsActive = @IsActive
@@ -320,6 +323,8 @@ BEGIN
 		, @growth
 		, @is_percent_growth);
 END
+
+GO
  
 CREATE TABLE [Windows].[TableStats](
 	[TableStatsID] [int] IDENTITY(1,1) NOT NULL,
