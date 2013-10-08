@@ -97,8 +97,8 @@ BEGIN
 	WHERE HostID = @HostID;
 END
 GO
-INSERT INTO Windows.Host (HostName) VALUES ('sql1')
-INSERT INTO Windows.Host (HostName) VALUES ('sql2')
+--INSERT INTO Windows.Host (HostName) VALUES ('sql1')
+--INSERT INTO Windows.Host (HostName) VALUES ('sql2')
 
 
 CREATE TABLE [Windows].[Instance](
