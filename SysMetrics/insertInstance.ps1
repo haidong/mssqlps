@@ -1,10 +1,10 @@
 function getSqlInstanceName($ComputerName)
 {
-	$a = Get-Service -ComputerName $ComputerName | where {($_.Name -like
+	$SqlInstances = Get-Service -ComputerName $ComputerName | where {($_.Name -like
     'mssql$*') -or ($_.Name -eq 'mssqlserver')}
     $instanceNameArray = New-Object System.Collections.ArrayList
-    if ($a -ne $null) {
-        $a | foreach {
+    if ($SqlInstances -ne $null) {
+        $SqlInstances | foreach {
             if ($_.Name -eq 'mssqlserver') {
                 [void]
                 $instanceNameArray.add(@{InstanceName=$ComputerName;Status=$_.Status})
@@ -18,15 +18,15 @@ function getSqlInstanceName($ComputerName)
     }
     $instanceNameArray
 }
-$a = Invoke-Sqlcmd -ServerInstance "sql1" -Query "EXEC
+$HostList = Invoke-Sqlcmd -ServerInstance "sql1" -Query "EXEC
 Windows.Host_Select_HostID_HostName" -Database "SysMetrics"
-$a | foreach {
+$HostList | foreach {
     $HostID = $_.HostID
     Try {
-        $b = getSqlInstanceName($_.HostName) }
+        $SqlInstances = getSqlInstanceName($_.HostName) }
     Catch {
         Return }
-    $b | foreach {
+    $SqlInstances | foreach {
         $InstanceName = $_.InstanceName
         if ($InstanceName -ne $null) {
             if ($_.Status -eq 'running') {
