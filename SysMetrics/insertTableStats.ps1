@@ -1,11 +1,13 @@
 function getInstanceUserDb($ServerInstance)
 {
-    $results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name from master.sys.databases where name not in ('master', 'model', 'msdb', 'tempdb')"
-    $results
+    $UserDbList = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name
+    from master.sys.databases where name not in ('master', 'model', 'msdb',
+    'tempdb') and state_desc = 'online'"
+    $UserDbList
 }
 function getDbDataIndexSizeInMB($ServerInstance, $DbName)
 {
-    $Query = @"
+    $TableStatsQuery = @"
         SELECT
         --(row_number() over(order by a3.name, a2.name))%2 as l1,
         a3.name AS [schemaname],
@@ -51,9 +53,9 @@ function getDbDataIndexSizeInMB($ServerInstance, $DbName)
             WHERE a2.type <> 'S' and a2.type <> 'IT'
             ORDER BY a3.name, a2.name
 "@
-    $results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query
+    $TableStats = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $TableStatsQuery
     $dataIndexArray = New-Object System.Collections.ArrayList
-    $results | foreach {
+    $TableStats | foreach {
          $myHashtable = @{schema = $_.schemaname; dataSizeInMB = $_.dataMB; indexSizeInMB = $_.index_sizeMB; tableName = $_.tableName; totalRowCount = $_.row_count}
     [void] $dataIndexArray.add($myHashtable)
             }
