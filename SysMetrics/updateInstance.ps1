@@ -1,5 +1,5 @@
-$a = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "SysMetrics"
-$a | ForEach-Object {
+$InstanceList = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "SysMetrics"
+$InstanceList | ForEach-Object {
 
     $InstanceName = $_.InstanceName
     $InstanceID = $_.InstanceID
