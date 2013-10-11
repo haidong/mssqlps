@@ -1,13 +1,13 @@
 function getInstanceUserDb($ServerInstance)
 {
-    $results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name
+    $UserDbList = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name
         from master.sys.databases where name not in ('master', 'model', 'msdb',
                 'tempdb') and state_desc = 'online'"
-    $results
+    $UserDbList
 }
 function getDbFileInfo($ServerInstance, $DbName)
 {
-    $Query = @"
+    $DbFileQuery = @"
         select
         a.name as FileLogicalName
         , a.filename as FilePhysicalName
@@ -23,11 +23,11 @@ function getDbFileInfo($ServerInstance, $DbName)
                 left outer join [$DbName].sys.filegroups c on a.groupid = c.data_space_id
 "@
     try {
-    $results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query -Database $DbName
+    $DbFileList = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $DbFileQuery -Database $DbName
     }
     catch {}
     $dataIndexArray = New-Object System.Collections.ArrayList
-    $results | foreach {
+    $DbFileList | foreach {
         $myHashtable = @{FileLogicalName = $_.FileLogicalName; FilePhysicalName = $_.FilePhysicalName; FileGroupName = $_.FileGroupName; FileSizeInMB = $_.FileSizeInMB; FreeSizeInMB = $_.FreeSizeInMB; max_size = $_.max_size; growth = $_.growth; is_percent_growth = $_.is_percent_growth}
         [void] $dataIndexArray.add($myHashtable)
     }
