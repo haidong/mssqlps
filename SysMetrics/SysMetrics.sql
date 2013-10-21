@@ -375,3 +375,52 @@ BEGIN
 END 
  
 GO
+
+
+IF NOT EXISTS ( SELECT  *
+                FROM    [sys].[tables]
+                WHERE   [name] = N'InstanceConfig'
+                        AND [type] = N'U' ) 
+    CREATE TABLE [Windows].[InstanceConfig]
+        (
+	  [InstanceConfigID] [int] IDENTITY(1,1) NOT NULL,
+	  [InstanceID] [int] NOT NULL,
+          [ConfigurationID] [int] NOT NULL ,
+          [Name] [nvarchar](35) NOT NULL ,
+          [Value] [sql_variant] NULL ,
+          [ValueInUse] [sql_variant] NULL ,
+          [CollectionDate] [datetime2] NOT NULL,
+CONSTRAINT [pk__InstanceConfigID_ID] PRIMARY KEY CLUSTERED
+(
+[InstanceConfigID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+)
+GO
+
+ALTER TABLE [Windows].[InstanceConfig] ADD DEFAULT (getdate()) FOR [CollectionDate]
+GO
+
+CREATE PROCEDURE [Windows].[InstanceConfig_Insert]
+	@InstanceID int
+	, @ConfigurationID int
+	, @Name nvarchar(35)
+	, @Value sql_variant
+	, @ValueInUse sql_variant
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO Windows.InstanceConfig (
+		InstanceID
+		, ConfigurationID
+		, Name
+		, Value
+		, ValueInUse)
+	VALUES (
+		@InstanceID
+		, @ConfigurationID
+		, @Name
+		, @Value
+		, @ValueInUse);
+END
+GO
