@@ -29,11 +29,11 @@ $InstanceList | ForEach-Object {
         Try {
            $InstanceConfigArray = getInstanceConfig($InstanceName)
            $InstanceConfigArray | ForEach-Object {
-               $Configuration_Id, $Name, $Value, $ValueInUse =
+               $ConfigurationId, $Name, $Value, $ValueInUse =
                $_.Configuration_Id, $_.Name, $_.Value, $_.ValueInUse
 
                $sql = "EXEC Windows.InstanceConfig_Insert $InstanceID,
-               $Configuration_Id, '$Name', '$Value', '$ValueInUse'"
+               $ConfigurationId, '$Name', '$Value', '$ValueInUse'"
                 Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
            }
         }

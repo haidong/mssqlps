@@ -99,8 +99,8 @@ BEGIN
 	WHERE HostID = @HostID;
 END
 GO
---INSERT INTO Windows.Host (HostName) VALUES ('sql1')
---INSERT INTO Windows.Host (HostName) VALUES ('sql2')
+INSERT INTO Windows.Host (HostName) VALUES ('sql1')
+INSERT INTO Windows.Host (HostName) VALUES ('sql2')
 
 
 CREATE TABLE [Windows].[Instance](
@@ -376,7 +376,6 @@ END
  
 GO
 
-
 IF NOT EXISTS ( SELECT  *
                 FROM    [sys].[tables]
                 WHERE   [name] = N'InstanceConfig'
@@ -422,5 +421,56 @@ BEGIN
 		, @Name
 		, @Value
 		, @ValueInUse);
+END
+GO
+IF NOT EXISTS ( SELECT  *
+                FROM    [sys].[tables]
+                WHERE   [name] = N'InstanceDmvPerfCounter'
+                        AND [type] = N'U' ) 
+    CREATE TABLE [Windows].[InstanceDmvPerfCounter]
+        (
+	  [InstanceDmvPerfCounterID] [int] IDENTITY(1,1) NOT NULL,
+	  [InstanceID] [int] NOT NULL,
+          [object_name] [nvarchar](128) NOT NULL ,
+          [counter_name] [nvarchar](128) NOT NULL ,
+          [instance_name] [nvarchar](128) NULL ,
+          [cntr_value] [bigint] NOT NULL ,
+          [cntr_type] [int] NOT NULL ,
+          [CollectionDate] [datetime2] NOT NULL,
+CONSTRAINT [pk__InstanceDmvPerfCounter_ID] PRIMARY KEY CLUSTERED
+(
+[InstanceDmvPerfCounterID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+)
+GO
+
+ALTER TABLE [Windows].[InstanceDmvPerfCounter] ADD DEFAULT (getdate()) FOR [CollectionDate]
+GO
+
+CREATE PROCEDURE [Windows].[InstanceDmvPerfCounter_Insert]
+	@InstanceID int
+	, @object_name nvarchar(128)
+	, @counter_name nvarchar(128)
+	, @instance_name nvarchar(128)
+	, @cntr_value bigint
+	, @cntr_type int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO Windows.InstanceDmvPerfCounter (
+		InstanceID
+		, object_name
+		, counter_name
+		, instance_name
+		, cntr_value
+		, cntr_type)
+	VALUES (
+		@InstanceID
+		, @object_name
+		, @counter_name
+		, @instance_name
+		, @cntr_value
+		, @cntr_type);
 END
 GO
