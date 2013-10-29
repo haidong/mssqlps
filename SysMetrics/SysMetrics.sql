@@ -131,10 +131,13 @@ GO
 ALTER TABLE [Windows].[Instance] CHECK CONSTRAINT [CK_Instance_IsActive]
 GO
 
-ALTER TABLE [Windows].[Instance] ADD  CONSTRAINT [DF_Instance_IsActive]  DEFAULT ('Y') FOR [IsActive]
+ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [DF_Instance_IsActive]  DEFAULT ('Y') FOR [IsActive]
 GO
 
 ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [DF_Instance_LastUpdate] DEFAULT (getdate()) FOR [LastUpdate]
+GO
+
+ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [FK_Instance_HostID]  FOREIGN KEY (HostID) REFERENCES [Windows].[Host] (HostID);
 GO
 
 CREATE PROCEDURE Windows.Instance_Select_InstanceID_InstanceName 
@@ -215,6 +218,9 @@ GO
  
 ALTER TABLE [Windows].[Storage] CHECK CONSTRAINT [ck__Storage_DiskSize]
 GO
+
+ALTER TABLE [Windows].[Storage] ADD CONSTRAINT [FK_Storage_HostID]  FOREIGN KEY (HostID) REFERENCES [Windows].[Host] (HostID);
+GO
  
 CREATE procedure [Windows].[Storage_Insert]
 	  @HostID [int]
@@ -274,17 +280,13 @@ GO
 ALTER TABLE [Windows].[DbFileStats] ADD DEFAULT (getdate()) FOR [CollectionDate]
 GO
  
-ALTER TABLE [Windows].[DbFileStats] WITH CHECK ADD FOREIGN KEY([InstanceID])
-REFERENCES [Windows].[Instance] ([InstanceID])
-GO
-
 ALTER TABLE [Windows].[DbFileStats]  WITH CHECK ADD  CONSTRAINT [CK_DbFileStats_Is_Percent_Growth] CHECK  (([Is_Percent_Growth]='N' OR [Is_Percent_Growth]='n' OR [Is_Percent_Growth]='Y' OR [Is_Percent_Growth]='y'))
 GO
 
-ALTER TABLE [Windows].[DbFileStats] CHECK CONSTRAINT [CK_DbFileStats_Is_Percent_Growth]
+ALTER TABLE [Windows].[DbFileStats] ADD  CONSTRAINT [DF_DbFileStats_Is_Percent_Growth]  DEFAULT ('N') FOR [Is_Percent_Growth]
 GO
 
-ALTER TABLE [Windows].[DbFileStats] ADD  CONSTRAINT [DF_DbFileStats_Is_Percent_Growth]  DEFAULT ('N') FOR [Is_Percent_Growth]
+ALTER TABLE [Windows].[DbFileStats] ADD CONSTRAINT [FK_DbFileStats_InstanceID]  FOREIGN KEY (InstanceID) REFERENCES [Windows].[Instance] (InstanceID);
 GO
 
 CREATE PROCEDURE [Windows].[DbFileStats_Insert]
@@ -352,6 +354,7 @@ GO
 ALTER TABLE [Windows].[TableStats] WITH CHECK ADD FOREIGN KEY([InstanceID])
 REFERENCES [Windows].[Instance] ([InstanceID])
 GO
+
 SET ANSI_NULLS ON
 GO
  
@@ -397,6 +400,9 @@ CONSTRAINT [pk__InstanceConfigID_ID] PRIMARY KEY CLUSTERED
 GO
 
 ALTER TABLE [Windows].[InstanceConfig] ADD DEFAULT (getdate()) FOR [CollectionDate]
+GO
+
+ALTER TABLE [Windows].[InstanceConfig] ADD CONSTRAINT [FK_InstanceConfig_InstanceID]  FOREIGN KEY (InstanceID) REFERENCES [Windows].[Instance] (InstanceID);
 GO
 
 CREATE PROCEDURE [Windows].[InstanceConfig_Insert]
@@ -445,6 +451,9 @@ CONSTRAINT [pk__InstanceDmvPerfCounter_ID] PRIMARY KEY CLUSTERED
 GO
 
 ALTER TABLE [Windows].[InstanceDmvPerfCounter] ADD DEFAULT (getdate()) FOR [CollectionDate]
+GO
+
+ALTER TABLE [Windows].[InstanceDmvPerfCounter] ADD CONSTRAINT [FK_InstanceDmvPerfCounter_InstanceID]  FOREIGN KEY (InstanceID) REFERENCES [Windows].[Instance] (InstanceID);
 GO
 
 CREATE PROCEDURE [Windows].[InstanceDmvPerfCounter_Insert]
