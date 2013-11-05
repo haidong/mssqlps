@@ -41,7 +41,7 @@ where [counter_name] IN ( N'Page life expectancy'
     $dataIndexArray
 }
 
-$InstanceList = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "SysMetrics"
+$InstanceList = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "JiMetrics"
 $InstanceList | ForEach-Object {
 
     $InstanceName = $_.InstanceName
@@ -56,7 +56,7 @@ $InstanceList | ForEach-Object {
 
                $sql = "EXEC Windows.InstanceDmvPerfCounter_Insert $InstanceID, '$object_name',
                '$counter_name', '$instance_name', $cntr_value, $cntr_type"
-                Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
+                Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"
            }
         }
     Catch { Return }

@@ -1,4 +1,4 @@
-$HostList = Invoke-Sqlcmd -Query "EXEC Windows.Host_Select_HostID_HostName" -ServerInstance "sql1" -Database "SysMetrics"
+$HostList = Invoke-Sqlcmd -Query "EXEC Windows.Host_Select_HostID_HostName" -ServerInstance "sql1" -Database "JiMetrics"
 $HostList | ForEach-Object {
     $HostName = $_.HostName
     $HostID = $_.HostID
@@ -16,5 +16,5 @@ $HostList | ForEach-Object {
             $DiskFreeGB = ($_.FreeSpace / 1gb) + 1
             $DiskFormat, $DiskLabel = $_.FileSystem, $_.Label
             $sql = "EXEC Windows.Storage_Insert $HostID, '$DiskPath', '$DiskFormat', '$DiskLabel', $DiskSizeGB, $DiskFreeGB"
-            Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
+            Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"
     }}}

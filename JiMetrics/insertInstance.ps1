@@ -19,7 +19,7 @@ function getSqlInstanceName($ComputerName)
     $instanceNameArray
 }
 $HostList = Invoke-Sqlcmd -ServerInstance "sql1" -Query "EXEC
-Windows.Host_Select_HostID_HostName" -Database "SysMetrics"
+Windows.Host_Select_HostID_HostName" -Database "JiMetrics"
 $HostList | foreach {
     $HostID = $_.HostID
     Try {
@@ -36,7 +36,7 @@ $HostList | foreach {
             $sql = "EXEC Windows.Instance_Insert $HostID, '$InstanceName',
             '$IsActive'"
             Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database `
-            "SysMetrics"
+            "JiMetrics"
         }
     }
 }

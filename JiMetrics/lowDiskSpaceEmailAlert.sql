@@ -13,8 +13,8 @@ SET @tableHTML =
        td = s.diskfreegb, '',
        td = cast ((Cast(diskfreegb AS NUMERIC) / disksizegb ) * 100 as integer), '',
        td = s.disklabel
-FROM   SysMetrics.Windows.Storage s
-       INNER JOIN SysMetrics.Windows.Host h
+FROM   JiMetrics.Windows.Storage s
+       INNER JOIN JiMetrics.Windows.Host h
                ON s.HostID = h.HostID
 WHERE  collectiondate > CONVERT(CHAR(8), Getdate(), 112)
        AND ( ( Cast(diskfreegb AS NUMERIC) / disksizegb ) * 100 ) < 25

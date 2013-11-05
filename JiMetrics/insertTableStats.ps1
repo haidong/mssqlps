@@ -61,9 +61,9 @@ function getDbDataIndexSizeInMB($ServerInstance, $DbName)
             }
     $dataIndexArray
 }
-function storeDataIndexIntoSysMetrics($sql)
+function storeDataIndexIntoJiMetrics($sql)
 {
-    $serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "SysMetrics" -Query $sql
+    $serverResults = Invoke-Sqlcmd -ServerInstance "sql1" -Database "JiMetrics" -Query $sql
     $serverResults | forEach {
         $ServerInstance, $ServerSID = $_.InstanceName, $_.InstanceID
         Try {
@@ -81,12 +81,12 @@ function storeDataIndexIntoSysMetrics($sql)
                     {
                     $SchemaName, $tableName, $TotalRowCount, $DataSizeInMB, $IndexSizeInMB = $_.Schema, $_.tableName, $_.TotalRowCount, $_.DataSizeInMB, $_.IndexSizeInMB
                     $sql = "EXEC Windows.TableStats_Insert $ServerSID, '$DbName', '$SchemaName', $tableName, $TotalRowCount, $DataSizeInMB, $IndexSizeInMB"
-                    Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
+                    Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"
                     } } } } }
 
 
 $sql = @"
 Windows.Instance_Select_InstanceID_InstanceName
 "@
-storeDataIndexIntoSysMetrics -sql $sql
+storeDataIndexIntoJiMetrics -sql $sql
 

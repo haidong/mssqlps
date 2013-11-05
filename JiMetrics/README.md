@@ -1,4 +1,4 @@
-SysMetrics is a SQL Server database that stores:
+JiMetrics is a SQL Server database that stores:
 
 1. Windows server disk information, including total disk size, free size. It also collects size information for mount points;
 2. SQL Server database file and table size information. For database files, it stores total size, size free, and growth patterns. For table size, it stores the database and schema the table belongs to, along with row counts, data size, and index size.

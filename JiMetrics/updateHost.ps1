@@ -1,4 +1,4 @@
-$HostList = Invoke-Sqlcmd -Query "exec Windows.Host_Select_HostID_HostName" -ServerInstance "sql1" -Database "SysMetrics"
+$HostList = Invoke-Sqlcmd -Query "exec Windows.Host_Select_HostID_HostName" -ServerInstance "sql1" -Database "JiMetrics"
 $HostList | ForEach-Object {
     $HostName = $_.HostName
     $HostID = $_.HostID
@@ -38,5 +38,5 @@ $HostList | ForEach-Object {
     $OSVersionNumber = $WmiResults.Version
 
     $sql = "EXEC Windows.Host_Update $HostID, '$Domain', '$OS', '$OSArchitecture', '$OSServicePack', '$OSVersionNumber', '$HardwareModel', '$HardwareVendor', $MemorySizeGB, '$CPUType', $CoreCount"
-    Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
+    Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"
 }

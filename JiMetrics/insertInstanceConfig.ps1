@@ -20,7 +20,7 @@ function getInstanceConfig($ServerInstance)
     $dataIndexArray
 }
 
-$InstanceList = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "SysMetrics"
+$InstanceList = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "JiMetrics"
 $InstanceList | ForEach-Object {
 
     $InstanceName = $_.InstanceName
@@ -34,7 +34,7 @@ $InstanceList | ForEach-Object {
 
                $sql = "EXEC Windows.InstanceConfig_Insert $InstanceID,
                $ConfigurationId, '$Name', '$Value', '$ValueInUse'"
-                Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "SysMetrics"
+                Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"
            }
         }
     Catch { Return }
