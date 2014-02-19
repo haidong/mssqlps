@@ -31,6 +31,12 @@ CREATE TABLE [Windows].[Host](
 	[MemorySizeGB] [int] NULL,
 	[CPUType] [nvarchar] (50) NULL,
 	[CoreCount] [int] NULL,
+	[IsVM] AS (CASE HardwareVendor 
+			WHEN 'innotek GmbH' THEN 'Y'
+			WHEN 'microsoft' THEN 'Y'
+			WHEN 'xen' THEN 'Y'
+			ELSE 'N'
+		  END) PERSISTED,
 	[IsActive] [nchar](1) NOT NULL,
 	[LastUpdate] [datetime2] NULL
  CONSTRAINT [PK_Host] PRIMARY KEY CLUSTERED 
@@ -40,8 +46,7 @@ CREATE TABLE [Windows].[Host](
  CONSTRAINT [UNQ_HostName] UNIQUE NONCLUSTERED 
 (
 	[HostName] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON)
-);
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON));
 
 GO
 
@@ -65,7 +70,7 @@ BEGIN
 
 	SELECT HostID, HostName FROM Windows.Host
 	WHERE IsActive = @IsActive;
-END;
+END
 GO
 CREATE PROCEDURE Windows.Host_Update 
 	  @HostID int = 0
@@ -97,7 +102,7 @@ BEGIN
 	, CoreCount = @CoreCount
 	, IsActive = @IsActive
 	WHERE HostID = @HostID;
-END;
+END
 GO
 INSERT INTO Windows.Host (HostName) VALUES ('sql1');
 INSERT INTO Windows.Host (HostName) VALUES ('sql2');
@@ -148,7 +153,7 @@ BEGIN
 
 	SELECT InstanceID, InstanceName FROM Windows.Instance
 	WHERE IsActive = @IsActive;
-END;
+END
 GO
 
 CREATE PROCEDURE Windows.Instance_Insert 
@@ -161,7 +166,7 @@ BEGIN
 
 	IF NOT EXISTS (SELECT * FROM Windows.Instance WHERE InstanceName = @InstanceName)
 	INSERT INTO [Windows].[Instance] (HostID, InstanceName, IsActive) VALUES (@HostID, @InstanceName, @IsActive);
-END;
+END
 GO
 
 CREATE PROCEDURE Windows.Instance_Update 
@@ -245,7 +250,7 @@ BEGIN
 		, @DiskLabel
 		, @DiskSizeGB
 		, @DiskFreeGB);
-END;
+END
 GO
  
 CREATE TABLE [Windows].[DbFileStats](
@@ -317,7 +322,7 @@ BEGIN
 		, @max_size
 		, @growth
 		, @is_percent_growth);
-END;
+END
 
 GO
  
@@ -358,7 +363,7 @@ BEGIN
 	SET NOCOUNT ON;
 	INSERT INTO Windows.TableStats (InstanceID, DbName, SchemaName, TableName, TotalRowCount, DataSizeInMB, IndexSizeInMB)
 	VALUES (@InstanceID, @DbName, @SchemaName, @TableName, @TotalRowCount, @DataSizeInMB, @IndexSizeInMB);
-END;
+END
  
 GO
 
@@ -409,7 +414,7 @@ BEGIN
 		, @Name
 		, @Value
 		, @ValueInUse);
-END;
+END
 GO
 IF NOT EXISTS ( SELECT  *
                 FROM    [sys].[tables]
@@ -462,5 +467,5 @@ BEGIN
 		, @instance_name
 		, @cntr_value
 		, @cntr_type);
-END;
+END
 GO
