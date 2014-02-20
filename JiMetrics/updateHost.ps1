@@ -5,6 +5,7 @@ $HostList | ForEach-Object {
 
     try {
        $WmiResults = get-wmiobject -computername $HostName -Class Win32_ComputerSystem
+       $BiosResults = get-wmiobject -computername $HostName -Class Win32_BIOS
         }
     catch [Exception] {
        continue
@@ -14,6 +15,10 @@ $HostList | ForEach-Object {
     $HardwareVendor = $WmiResults.Manufacturer
     $HardwareModel = $WmiResults.Model
     $MemorySizeGB = ($WmiResults.TotalPhysicalMemory / 1gb) + 1
+    
+    $SMBiosVersion = $BiosResults.SMBIOSBIOSVersion
+    $BiosReleaseDate = $BiosResults.ReleaseDate.substring(0, 8)
+    $SerialNumber = $BiosResults.SerialNumber
 
     try {
        $WmiResults = get-wmiobject -computername $HostName -Class Win32_Processor | select -first 1
@@ -37,6 +42,6 @@ $HostList | ForEach-Object {
     $OSServicePack = $WmiResults.CSDVersion
     $OSVersionNumber = $WmiResults.Version
 
-    $sql = "EXEC Windows.Host_Update $HostID, '$Domain', '$OS', '$OSArchitecture', '$OSServicePack', '$OSVersionNumber', '$HardwareModel', '$HardwareVendor', $MemorySizeGB, '$CPUType', $CoreCount"
+    $sql = "EXEC Windows.Host_Update $HostID, '$Domain', '$OS', '$OSArchitecture', '$OSServicePack', '$OSVersionNumber', '$HardwareModel', '$HardwareVendor', $MemorySizeGB, '$CPUType', $CoreCount, '$SMBiosVersion', '$BiosReleaseDate', '$SerialNumber'"
     Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"
 }

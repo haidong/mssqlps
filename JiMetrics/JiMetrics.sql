@@ -31,6 +31,9 @@ CREATE TABLE [Windows].[Host](
 	[MemorySizeGB] [int] NULL,
 	[CPUType] [nvarchar] (50) NULL,
 	[CoreCount] [int] NULL,
+	[SMBIOSVersion] [nvarchar](50) NULL,
+	[BIOSReleaseDate] [DATE] NULL,
+	[SerialNumber] [nvarchar](50) NULL,
 	[IsVM] AS (CASE HardwareVendor 
 			WHEN 'innotek GmbH' THEN 'Y'
 			WHEN 'microsoft' THEN 'Y'
@@ -39,27 +42,25 @@ CREATE TABLE [Windows].[Host](
 		  END) PERSISTED,
 	[IsActive] [nchar](1) NOT NULL,
 	[LastUpdate] [datetime2] NULL
- CONSTRAINT [PK_Host] PRIMARY KEY CLUSTERED 
-(
-	[HostID] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON),
- CONSTRAINT [UNQ_HostName] UNIQUE NONCLUSTERED 
-(
-	[HostName] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON));
+ CONSTRAINT [PK_Host] PRIMARY KEY CLUSTERED ([HostID]),
+ CONSTRAINT [UNQ_HostName] UNIQUE NONCLUSTERED ([HostName]));
 
 GO
 
-ALTER TABLE [Windows].[Host]  WITH CHECK ADD  CONSTRAINT [CK_Host_IsActive] CHECK  (([IsActive]='N' OR [IsActive]='n' OR [IsActive]='Y' OR [IsActive]='y'));
+ALTER TABLE [Windows].[Host]  WITH CHECK ADD  CONSTRAINT 
+[CK_Host_IsActive] CHECK  (([IsActive]='N' OR [IsActive]='n' OR 
+		   	  [IsActive]='Y' OR [IsActive]='y'));
 GO
 
 ALTER TABLE [Windows].[Host] CHECK CONSTRAINT [CK_Host_IsActive];
 GO
 
-ALTER TABLE [Windows].[Host] ADD  CONSTRAINT [DF_Host_IsActive]  DEFAULT ('Y') FOR [IsActive];
+ALTER TABLE [Windows].[Host] ADD  CONSTRAINT [DF_Host_IsActive]
+  DEFAULT ('Y') FOR [IsActive];
 GO
 
-ALTER TABLE [Windows].[Host] ADD CONSTRAINT [DF_Host_LastUpdate] DEFAULT (getdate()) FOR [LastUpdate];
+ALTER TABLE [Windows].[Host] ADD CONSTRAINT [DF_Host_LastUpdate] 
+  DEFAULT (getdate()) FOR [LastUpdate];
 GO
 
 CREATE PROCEDURE Windows.Host_Select_HostID_HostName 
@@ -84,6 +85,9 @@ CREATE PROCEDURE Windows.Host_Update
 	, @MemorySizeGB int = NULL
 	, @CPUType nvarchar(50) = NULL
 	, @CoreCount int = NULL
+	, @SMBIOSVersion nvarchar(50) = NULL
+	, @BIOSReleaseDate DATE = NULL
+	, @SerialNumber nvarchar(50) = NULL
 	, @IsActive nchar(1) = 'Y'
 AS
 BEGIN
@@ -100,6 +104,9 @@ BEGIN
 	, MemorySizeGB = @MemorySizeGB
 	, CPUType = @CPUType
 	, CoreCount = @CoreCount
+	, SMBIOSVersion = @SMBIOSVersion
+	, BIOSReleaseDate = @BIOSReleaseDate
+	, SerialNumber = @SerialNumber
 	, IsActive = @IsActive
 	WHERE HostID = @HostID;
 END
@@ -118,31 +125,30 @@ CREATE TABLE [Windows].[Instance](
 	[InstanceServicePack] [nvarchar](20) NULL,
 	[IsActive] [nchar](1) NOT NULL,
 	[LastUpdate] [datetime2] NULL
- CONSTRAINT [PK_Instance] PRIMARY KEY CLUSTERED 
-(
-	[InstanceID] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON),
- CONSTRAINT [UNQ_InstanceName] UNIQUE NONCLUSTERED 
-(
-	[InstanceName] ASC
-)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) 
-);
+ CONSTRAINT [PK_Instance] PRIMARY KEY CLUSTERED ([InstanceID]),
+ CONSTRAINT [UNQ_InstanceName] UNIQUE NONCLUSTERED ([InstanceName]));
 
 GO
 
-ALTER TABLE [Windows].[Instance]  WITH CHECK ADD  CONSTRAINT [CK_Instance_IsActive] CHECK  (([IsActive]='N' OR [IsActive]='n' OR [IsActive]='Y' OR [IsActive]='y'));
+ALTER TABLE [Windows].[Instance]  WITH CHECK ADD  CONSTRAINT 
+[CK_Instance_IsActive] CHECK  (([IsActive]='N' OR [IsActive]='n' OR 
+		       	      [IsActive]='Y' OR [IsActive]='y'));
 GO
 
-ALTER TABLE [Windows].[Instance] CHECK CONSTRAINT [CK_Instance_IsActive];
+ALTER TABLE [Windows].[Instance] CHECK CONSTRAINT 
+[CK_Instance_IsActive];
 GO
 
-ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [DF_Instance_IsActive]  DEFAULT ('Y') FOR [IsActive];
+ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [DF_Instance_IsActive]
+  DEFAULT ('Y') FOR [IsActive];
 GO
 
-ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [DF_Instance_LastUpdate] DEFAULT (getdate()) FOR [LastUpdate];
+ALTER TABLE [Windows].[Instance] ADD CONSTRAINT 
+      [DF_Instance_LastUpdate] DEFAULT (getdate()) FOR [LastUpdate];
 GO
 
-ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [FK_Instance_HostID]  FOREIGN KEY (HostID) REFERENCES [Windows].[Host] (HostID);
+ALTER TABLE [Windows].[Instance] ADD CONSTRAINT [FK_Instance_HostID]
+  FOREIGN KEY (HostID) REFERENCES [Windows].[Host] (HostID);
 GO
 
 CREATE PROCEDURE Windows.Instance_Select_InstanceID_InstanceName 
@@ -164,8 +170,10 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	IF NOT EXISTS (SELECT * FROM Windows.Instance WHERE InstanceName = @InstanceName)
-	INSERT INTO [Windows].[Instance] (HostID, InstanceName, IsActive) VALUES (@HostID, @InstanceName, @IsActive);
+	IF NOT EXISTS (SELECT * FROM Windows.Instance
+	 WHERE InstanceName = @InstanceName)
+	   INSERT INTO [Windows].[Instance] (HostID, InstanceName, 
+	   	 IsActive) VALUES (@HostID, @InstanceName, @IsActive);
 END
 GO
 
@@ -200,29 +208,33 @@ CREATE TABLE [Windows].[Storage](
 	, [DiskFreeGB] [int] NOT NULL
 	, [DiskUsedGB] AS ([DiskSizeGB]-[DiskFreeGB]) PERSISTED
 	, [CollectionDate] [datetime2] NOT NULL,
-CONSTRAINT [pk__Storage_RecordID] PRIMARY KEY CLUSTERED
-(
-[RecordID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON));
+CONSTRAINT [pk__Storage_RecordID] PRIMARY KEY CLUSTERED ([RecordID]));
  
 GO
  
-ALTER TABLE [Windows].[Storage] ADD DEFAULT (getdate()) FOR [CollectionDate];
+ALTER TABLE [Windows].[Storage] 
+      ADD DEFAULT (getdate()) FOR [CollectionDate];
 GO
  
-ALTER TABLE [Windows].[Storage] WITH CHECK ADD CONSTRAINT [fk__Storage_HostID] FOREIGN KEY([HostID]) REFERENCES [Windows].[Host] ([HostID]);
+ALTER TABLE [Windows].[Storage] WITH CHECK ADD CONSTRAINT 
+[fk__Storage_HostID] FOREIGN KEY([HostID]) 
+REFERENCES [Windows].[Host] ([HostID]);
 GO
  
 ALTER TABLE [Windows].[Storage] CHECK CONSTRAINT [fk__Storage_HostID];
 GO
  
-ALTER TABLE [Windows].[Storage] WITH CHECK ADD CONSTRAINT [ck__Storage_DiskSize] CHECK (([DiskUsedGB]>=(0) AND [DiskSizeGB]>=(0) AND [DiskFreeGB]>=(0)));
+ALTER TABLE [Windows].[Storage] WITH CHECK ADD CONSTRAINT 
+[ck__Storage_DiskSize] CHECK (([DiskUsedGB]>=(0) 
+		       AND [DiskSizeGB]>=(0) AND [DiskFreeGB]>=(0)));
 GO
  
-ALTER TABLE [Windows].[Storage] CHECK CONSTRAINT [ck__Storage_DiskSize];
+ALTER TABLE [Windows].[Storage] 
+      CHECK CONSTRAINT [ck__Storage_DiskSize];
 GO
 
-ALTER TABLE [Windows].[Storage] ADD CONSTRAINT [FK_Storage_HostID]  FOREIGN KEY (HostID) REFERENCES [Windows].[Host] (HostID);
+ALTER TABLE [Windows].[Storage] ADD CONSTRAINT [FK_Storage_HostID]  
+      FOREIGN KEY (HostID) REFERENCES [Windows].[Host] (HostID);
 GO
  
 CREATE procedure [Windows].[Storage_Insert]
@@ -267,22 +279,28 @@ CREATE TABLE [Windows].[DbFileStats](
 	[Is_Percent_Growth] nchar(1) NOT NULL,
 	[CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__DbFileStatsID_SID] PRIMARY KEY CLUSTERED
-(
-[DbFileStatsID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON));
+([DbFileStatsID] ASC));
  
 GO
  
-ALTER TABLE [Windows].[DbFileStats] ADD DEFAULT (getdate()) FOR [CollectionDate];
+ALTER TABLE [Windows].[DbFileStats] 
+      ADD DEFAULT (getdate()) FOR [CollectionDate];
 GO
  
-ALTER TABLE [Windows].[DbFileStats]  WITH CHECK ADD  CONSTRAINT [CK_DbFileStats_Is_Percent_Growth] CHECK  (([Is_Percent_Growth]='N' OR [Is_Percent_Growth]='n' OR [Is_Percent_Growth]='Y' OR [Is_Percent_Growth]='y'));
+ALTER TABLE [Windows].[DbFileStats]  WITH CHECK ADD CONSTRAINT 
+      [CK_DbFileStats_Is_Percent_Growth] CHECK 
+      (([Is_Percent_Growth]='N' OR [Is_Percent_Growth]='n' OR 
+      [Is_Percent_Growth]='Y' OR [Is_Percent_Growth]='y'));
 GO
 
-ALTER TABLE [Windows].[DbFileStats] ADD  CONSTRAINT [DF_DbFileStats_Is_Percent_Growth]  DEFAULT ('N') FOR [Is_Percent_Growth];
+ALTER TABLE [Windows].[DbFileStats] ADD CONSTRAINT 
+[DF_DbFileStats_Is_Percent_Growth]  DEFAULT ('N') FOR 
+[Is_Percent_Growth];
 GO
 
-ALTER TABLE [Windows].[DbFileStats] ADD CONSTRAINT [FK_DbFileStats_InstanceID]  FOREIGN KEY (InstanceID) REFERENCES [Windows].[Instance] (InstanceID);
+ALTER TABLE [Windows].[DbFileStats] ADD CONSTRAINT 
+      [FK_DbFileStats_InstanceID]  FOREIGN KEY (InstanceID) REFERENCES 
+      [Windows].[Instance] (InstanceID);
 GO
 
 CREATE PROCEDURE [Windows].[DbFileStats_Insert]
@@ -337,17 +355,16 @@ CREATE TABLE [Windows].[TableStats](
 	[IndexSizeInMB] [int] NOT NULL,
 	[CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__TableStatsID_ID] PRIMARY KEY CLUSTERED
-(
-[TableStatsID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON));
+([TableStatsID] ASC));
  
 GO
  
-ALTER TABLE [Windows].[TableStats] ADD DEFAULT (getdate()) FOR [CollectionDate];
+ALTER TABLE [Windows].[TableStats] ADD 
+      DEFAULT (getdate()) FOR [CollectionDate];
 GO
  
-ALTER TABLE [Windows].[TableStats] WITH CHECK ADD FOREIGN KEY([InstanceID])
-REFERENCES [Windows].[Instance] ([InstanceID]);
+ALTER TABLE [Windows].[TableStats] WITH CHECK ADD FOREIGN 
+KEY([InstanceID]) REFERENCES [Windows].[Instance] ([InstanceID]);
 GO
 
 CREATE procedure [Windows].[TableStats_Insert]
@@ -361,8 +378,10 @@ CREATE procedure [Windows].[TableStats_Insert]
 AS
 BEGIN
 	SET NOCOUNT ON;
-	INSERT INTO Windows.TableStats (InstanceID, DbName, SchemaName, TableName, TotalRowCount, DataSizeInMB, IndexSizeInMB)
-	VALUES (@InstanceID, @DbName, @SchemaName, @TableName, @TotalRowCount, @DataSizeInMB, @IndexSizeInMB);
+	INSERT INTO Windows.TableStats (InstanceID, DbName, SchemaName,
+	 TableName, TotalRowCount, DataSizeInMB, IndexSizeInMB)
+	VALUES (@InstanceID, @DbName, @SchemaName, @TableName, 
+	       @TotalRowCount, @DataSizeInMB, @IndexSizeInMB);
 END
  
 GO
@@ -381,15 +400,16 @@ IF NOT EXISTS ( SELECT  *
           [ValueInUse] [sql_variant] NULL ,
           [CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__InstanceConfigID_ID] PRIMARY KEY CLUSTERED
-(
-[InstanceConfigID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON));
+([InstanceConfigID] ASC));
 GO
 
-ALTER TABLE [Windows].[InstanceConfig] ADD DEFAULT (getdate()) FOR [CollectionDate];
+ALTER TABLE [Windows].[InstanceConfig] 
+      ADD DEFAULT (getdate()) FOR [CollectionDate];
 GO
 
-ALTER TABLE [Windows].[InstanceConfig] ADD CONSTRAINT [FK_InstanceConfig_InstanceID]  FOREIGN KEY (InstanceID) REFERENCES [Windows].[Instance] (InstanceID);
+ALTER TABLE [Windows].[InstanceConfig] ADD CONSTRAINT 
+[FK_InstanceConfig_InstanceID]  
+FOREIGN KEY (InstanceID) REFERENCES [Windows].[Instance] (InstanceID);
 GO
 
 CREATE PROCEDURE [Windows].[InstanceConfig_Insert]
@@ -431,15 +451,16 @@ IF NOT EXISTS ( SELECT  *
           [cntr_type] [int] NOT NULL ,
           [CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__InstanceDmvPerfCounter_ID] PRIMARY KEY CLUSTERED
-(
-[InstanceDmvPerfCounterID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON));
+([InstanceDmvPerfCounterID] ASC));
 GO
 
-ALTER TABLE [Windows].[InstanceDmvPerfCounter] ADD DEFAULT (getdate()) FOR [CollectionDate];
+ALTER TABLE [Windows].[InstanceDmvPerfCounter] 
+      ADD DEFAULT (getdate()) FOR [CollectionDate];
 GO
 
-ALTER TABLE [Windows].[InstanceDmvPerfCounter] ADD CONSTRAINT [FK_InstanceDmvPerfCounter_InstanceID]  FOREIGN KEY (InstanceID) REFERENCES [Windows].[Instance] (InstanceID);
+ALTER TABLE [Windows].[InstanceDmvPerfCounter] ADD CONSTRAINT 
+[FK_InstanceDmvPerfCounter_InstanceID]  FOREIGN KEY (InstanceID) 
+REFERENCES [Windows].[Instance] (InstanceID);
 GO
 
 CREATE PROCEDURE [Windows].[InstanceDmvPerfCounter_Insert]
