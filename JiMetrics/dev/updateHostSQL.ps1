@@ -1,4 +1,4 @@
-function updateHostSQL($h) {
+﻿function updateHostSQL($h) {
     $HostName = $h.HostName
     $HostID = $h.HostID
 
@@ -43,10 +43,4 @@ function updateHostSQL($h) {
 
     $sql = "EXEC Windows.Host_Update $HostID, '$Domain', '$OS', '$OSArchitecture', '$OSServicePack', '$OSVersionNumber', '$HardwareModel', '$HardwareVendor', $MemorySizeGB, '$CPUType', $CoreCount, '$SMBiosVersion', '$BiosReleaseDate', '$SerialNumber'"
     return $sql
-}
-
-$HostList = Invoke-Sqlcmd -Query "exec Windows.Host_Select_HostID_HostName" -ServerInstance "sql1" -Database "JiMetrics"
-$HostList | ForEach-Object {
-    $sql = updateHostSQL($_)
-    Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"
 }
