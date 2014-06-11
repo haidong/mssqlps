@@ -1,4 +1,4 @@
-function getSqlInstanceName($ComputerName) {
+﻿function getSqlInstanceName($ComputerName) {
     $SqlInstances = Get-Service -ComputerName $ComputerName | where {($_.Name -like
     'mssql$*') -or ($_.Name -eq 'mssqlserver')}
     $instanceArray = @()
@@ -19,13 +19,3 @@ function insertInstanceSQL($i, $HostID) {
         else {$IsActive = "N"}
         $sql = "EXEC Windows.Instance_Insert $HostID, '$InstanceName', '$IsActive'"
 	return $sql}}
-
-$HostList = Invoke-Sqlcmd -ServerInstance "sql1" -Query "EXEC
-Windows.Host_Select_HostID_HostName" -Database "JiMetrics"
-$HostList | foreach {
-    $HostID = $_.HostID
-    Try {$SqlInstances = getSqlInstanceName($_.HostName)}
-    Catch {Return}
-    $SqlInstances | foreach {
-		$sql = insertInstanceSQL $_ $HostID
-        Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"}}
