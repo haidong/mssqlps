@@ -1,4 +1,4 @@
-function updateInstanceSQL($i) {
+﻿function updateInstanceSQL($i) {
     $InstanceName = $i.InstanceName
     $InstanceID = $i.InstanceID
 	
@@ -14,10 +14,3 @@ function updateInstanceSQL($i) {
     $sql = "EXEC Windows.Instance_Update $InstanceID, '$InstanceEdition', '$InstanceEditionID', '$InstanceVersion', '$InstanceServicePack'"
 	return $sql
 }
-
-$InstanceList = Invoke-Sqlcmd -Query "exec Windows.Instance_Select_InstanceID_InstanceName" -ServerInstance "sql1" -Database "JiMetrics"
-$InstanceList | ForEach-Object {
-     try {
-		 $sql = updateInstanceSQL($_)
-		 Invoke-Sqlcmd -Query $sql -ServerInstance "sql1" -Database "JiMetrics"}
-	 Catch [Exception] {Continue}}
