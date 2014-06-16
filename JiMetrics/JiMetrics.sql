@@ -118,7 +118,8 @@ INSERT INTO Windows.Host (HostName) VALUES ('sql2');
 CREATE TABLE [Windows].[Instance](
 	[InstanceID] [int] IDENTITY(1,1) NOT NULL,
 	[HostID] [int] NOT NULL,
-	[InstanceName] [nvarchar](30) NULL,
+	[InstanceName] [nvarchar](30) NOT NULL,
+	[StartupAcct] [nvarchar](30) NOT NULL,
 	[InstanceEdition] [nvarchar](50) NULL,
 	[InstanceEditionID] [bigint] NULL,
 	[InstanceVersion] [nchar](20) NULL,
@@ -165,6 +166,7 @@ GO
 CREATE PROCEDURE Windows.Instance_Insert 
        	@HostID int
 	, @InstanceName nvarchar(30)
+	, @StartupAcct nvarchar(30)
 	, @IsActive nvarchar(1)
 AS
 BEGIN
@@ -172,8 +174,8 @@ BEGIN
 
 	IF NOT EXISTS (SELECT * FROM Windows.Instance
 	 WHERE InstanceName = @InstanceName)
-	   INSERT INTO [Windows].[Instance] (HostID, InstanceName, 
-	   	 IsActive) VALUES (@HostID, @InstanceName, @IsActive);
+	   INSERT INTO [Windows].[Instance] (HostID, InstanceName, StartupAcct, 
+	   	 IsActive) VALUES (@HostID, @InstanceName, @StartupAcct, @IsActive);
 END
 GO
 

@@ -4,20 +4,23 @@ function getSqlInstanceName($ComputerName) {
     $instanceArray = @()
     if ($SqlInstances -ne $null) {
         $SqlInstances | foreach {
-            if ($_.Name -eq 'mssqlserver') {
-                $instanceArray = $instanceArray + @(@{InstanceName=$ComputerName;Status=$_.Status})}
+			$sqlName = $_.Name
+			$service = Get-WmiObject win32_service -ComputerName $ComputerName | where {$_.Name -eq $sqlName}
+            if ($sqlName -eq 'mssqlserver') {
+                $instanceArray = $instanceArray + @(@{InstanceName=$ComputerName; StartupAcct=$service.StartName; Status=$_.Status})}
             else {
                 $instanceArray = $instanceArray + @(@{InstanceName=$ComputerName + "\" +
-								$_.Name.split("$")[1];Status=$_.Status})}}}
+								$sqlName.split("$")[1];StartupAcct=$service.StartName; Status=$_.Status})}}}
     return $instanceArray}
 
 function insertInstanceSQL($i, $HostID) {
     $InstanceName = $i.InstanceName
+    $StartupAcct = $i.StartupAcct
     if ($InstanceName -ne $null) {
         if ($i.Status -eq 'running') {
             $IsActive = "Y"}
         else {$IsActive = "N"}
-        $sql = "EXEC Windows.Instance_Insert $HostID, '$InstanceName', '$IsActive'"
+        $sql = "EXEC Windows.Instance_Insert $HostID, '$InstanceName', '$StartupAcct', '$IsActive'"
 	return $sql}}
 
 $HostList = Invoke-Sqlcmd -ServerInstance "sql1" -Query "EXEC
