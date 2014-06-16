@@ -185,6 +185,7 @@ CREATE PROCEDURE Windows.Instance_Update
 	, @InstanceEditionID bigint = NULL
 	, @InstanceVersion nvarchar(20) = NULL
 	, @InstanceServicePack nvarchar(20) = NULL
+	, @StartupAcct nvarchar(30) = NULL
 	, @IsActive nchar(1) = 'Y'
 AS
 BEGIN
@@ -195,6 +196,7 @@ BEGIN
 	, InstanceEditionID = @InstanceEditionID
 	, InstanceVersion = @InstanceVersion
 	, InstanceServicePack = @InstanceServicePack
+	, StartupAcct = @StartupAcct
 	, IsActive = @IsActive
 	WHERE InstanceID = @InstanceID;
 END
