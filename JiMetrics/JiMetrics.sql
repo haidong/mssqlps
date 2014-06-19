@@ -43,7 +43,8 @@ CREATE TABLE [Windows].[Host](
 	[IsActive] [nchar](1) NOT NULL,
 	[LastUpdate] [datetime2] NULL
  CONSTRAINT [PK_Host] PRIMARY KEY CLUSTERED ([HostID]),
- CONSTRAINT [UNQ_HostName] UNIQUE NONCLUSTERED ([HostName]));
+ CONSTRAINT [UNQ_HostName] UNIQUE NONCLUSTERED ([HostName])
+ WITH (DATA_COMPRESSION = PAGE));
 
 GO
 
@@ -127,7 +128,8 @@ CREATE TABLE [Windows].[Instance](
 	[IsActive] [nchar](1) NOT NULL,
 	[LastUpdate] [datetime2] NULL
  CONSTRAINT [PK_Instance] PRIMARY KEY CLUSTERED ([InstanceID]),
- CONSTRAINT [UNQ_InstanceName] UNIQUE NONCLUSTERED ([InstanceName]));
+ CONSTRAINT [UNQ_InstanceName] UNIQUE NONCLUSTERED ([InstanceName])
+ WITH (DATA_COMPRESSION = PAGE));
 
 GO
 
@@ -212,7 +214,8 @@ CREATE TABLE [Windows].[Storage](
 	, [DiskFreeGB] [int] NOT NULL
 	, [DiskUsedGB] AS ([DiskSizeGB]-[DiskFreeGB]) PERSISTED
 	, [CollectionDate] [datetime2] NOT NULL,
-CONSTRAINT [pk__Storage_RecordID] PRIMARY KEY CLUSTERED ([RecordID]));
+CONSTRAINT [pk__Storage_RecordID] PRIMARY KEY CLUSTERED ([RecordID])
+ WITH (DATA_COMPRESSION = PAGE));
  
 GO
  
@@ -283,7 +286,8 @@ CREATE TABLE [Windows].[DbFileStats](
 	[Is_Percent_Growth] nchar(1) NOT NULL,
 	[CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__DbFileStatsID_SID] PRIMARY KEY CLUSTERED
-([DbFileStatsID] ASC));
+([DbFileStatsID] ASC)
+ WITH (DATA_COMPRESSION = PAGE));
  
 GO
  
@@ -359,7 +363,8 @@ CREATE TABLE [Windows].[TableStats](
 	[IndexSizeInMB] [int] NOT NULL,
 	[CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__TableStatsID_ID] PRIMARY KEY CLUSTERED
-([TableStatsID] ASC));
+([TableStatsID] ASC)
+ WITH (DATA_COMPRESSION = PAGE));
  
 GO
  
@@ -404,7 +409,8 @@ IF NOT EXISTS ( SELECT  *
           [ValueInUse] [sql_variant] NULL ,
           [CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__InstanceConfigID_ID] PRIMARY KEY CLUSTERED
-([InstanceConfigID] ASC));
+([InstanceConfigID] ASC)
+ WITH (DATA_COMPRESSION = PAGE));
 GO
 
 ALTER TABLE [Windows].[InstanceConfig] 
@@ -455,7 +461,8 @@ IF NOT EXISTS ( SELECT  *
           [cntr_type] [int] NOT NULL ,
           [CollectionDate] [datetime2] NOT NULL,
 CONSTRAINT [pk__InstanceDmvPerfCounter_ID] PRIMARY KEY CLUSTERED
-([InstanceDmvPerfCounterID] ASC));
+([InstanceDmvPerfCounterID] ASC)
+ WITH (DATA_COMPRESSION = PAGE));
 GO
 
 ALTER TABLE [Windows].[InstanceDmvPerfCounter] 
