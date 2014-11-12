@@ -2,6 +2,25 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 . "$here\$sut"
 
+
+Describe "getInstanceMasterUserSP" {
+
+        It "should have sp_WhoIsActive" {
+			$a = getInstanceMasterUserSP("sql1")
+			$a.name[1] | Should Be "sp_WhoIsActive"
+		}
+
+}
+
+Describe "getMasterUserSPDefinition" {
+
+        It "sp_WhoIsActive definition should be" {
+			$a = getMasterUserSPDefinition "sql1" "sp_WhoIsActive"
+			$a | Should Be "sp_WhoIsActive"
+		}
+
+}
+
 Describe "getInstanceVersion" {
 
         It "checks version number for sql1" {

@@ -17,12 +17,27 @@ function getInstanceUserDb($ServerInstance)
     'tempdb') and state_desc = 'ONLINE'" -SuppressProviderContextWarning
 	$results
 }
+
 function getUserDbDatafile($ServerInstance, $DbName)
 {
 	$Query = "select physical_name from [$DbName].sys.database_files where type <> 1 order by file_id"
 	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query `
     -SuppressProviderContextWarning
 	$results
+}
+function getInstanceMasterUserSP($ServerInstance)
+{
+	# Get user defined SP inside master, under dbo schema
+	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query "select name from master.sys.objects where type = 'p' and is_ms_shipped = 0 and schema_id = 1" -SuppressProviderContextWarning
+	$results
+}
+function getMasterUserSPDefinition($ServerInstance, $ProcName)
+{
+	$Query = "select NULL AS [Text], ISNULL(smsp.definition, ssmsp.definition) AS [Definition]
+FROM master.sys.all_objects as sp left join master.sys.sql_modules as smsp on smsp.object_id = sp.object_id left join master.sys.system_sql_modules AS ssmsp on ssmsp.object_id = sp.object_id where (sp.type = N'P') and (sp.name = N'$ProcName' and schema_id = 1)"
+	$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query `
+    -SuppressProviderContextWarning -MaxCharLength 200000
+	$results.Definition
 }
 function getUserDbLogfile($ServerInstance, $DbName)
 {
